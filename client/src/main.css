@@ -1,0 +1,43 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+:root {
+  font-size: 16px;
+  --border-radius: 5px;
+  --accent2: #de0000;
+}
+
+:root {
+  --bg1: rgb(255, 255, 255);
+  --bg2: rgb(247, 247, 247);
+  --accent1: rgb(13, 13, 13);
+  --neutral: rgb(103, 103, 103);
+}
+
+/* :root {
+  --bg1: rgb(29, 29, 29);
+  --bg2: rgb(22, 22, 22);
+  --accent1: rgb(255, 255, 255);
+
+  --neutral: rgb(122, 122, 122);
+} */
+
+body {
+  background-color: var(--bg2);
+  color: var(--accent1);
+  min-width: 400px;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main {
+  flex: 1;
+  padding: 7rem 3rem 3rem;
+}

@@ -1,10 +1,38 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Root from './routes/Root/Root';
+import AllBooks from './routes/AllBooks/AllBooks';
+import Home from './routes/Home/Home';
+import AddBookForm, { action as addBookAction } from './routes/AddBook/AddBook';
+import BookDetail from './routes/BookDetail/BookDetail';
+import './main.css';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Root />,
+    children: [
+      { index: true, element: <Home /> },
+      {
+        path: '/allBooks',
+        element: <AllBooks />,
+      },
+      {
+        path: '/book/:id',
+        element: <BookDetail />,
+      },
+    ],
+  },
+  {
+    path: '/addBookForm',
+    element: <AddBookForm />,
+    action: addBookAction,
+  },
+]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
-  </StrictMode>,
-)
+    <RouterProvider router={router} />
+  </StrictMode>
+);
