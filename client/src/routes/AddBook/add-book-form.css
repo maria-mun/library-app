@@ -1,0 +1,77 @@
+#add-book-form {
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+
+  gap: 1rem;
+  width: fit-content;
+}
+
+#add-book-form > p {
+  font-size: 0.8rem;
+}
+
+#add-book-form span {
+  color: darkred;
+}
+
+#add-book-form > div {
+  --pad: 0.75rem;
+  position: relative;
+}
+
+input {
+  padding: var(--pad);
+  border-radius: 8px;
+  background-color: var(--bg2);
+  border: 1px solid var(--accent1);
+  color: var(--accent1);
+  font-size: 1rem;
+  width: 300px;
+  outline: none;
+}
+
+label {
+  background-color: var(--bg2);
+  color: var(--neutral);
+  font-size: 1rem;
+  position: absolute;
+  left: var(--pad);
+  top: var(--pad);
+  background: inherit;
+  padding-inline: 0.3em;
+  transition: transform 200ms;
+  pointer-events: none;
+  transform-origin: left;
+  translate: -0.3em;
+}
+
+input::placeholder {
+  opacity: 0;
+}
+input:focus + label,
+input:not(:placeholder-shown) + label {
+  background-color: var(--bg2);
+  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
+  color: var(--accent2);
+}
+
+input:focus {
+  outline: 1px solid var(--accent1);
+}
+
+#add-book-form button {
+  background: var(--accent2);
+
+  border: none;
+  border-radius: var(--border-radius);
+  color: rgb(255, 255, 255);
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#add-book-form button:active {
+  transform: scale(95%);
+}
