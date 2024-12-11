@@ -1,6 +1,8 @@
-import React from 'react';
+import { useState } from 'react';
 import { Form, useActionData } from 'react-router-dom';
 import './add-book-form.css';
+import Select from '../../components/Select/Select';
+import { SelectOption } from '../../components/Select/Select';
 
 export const action = async ({ request }: { request: Request }) => {
   const formData = await request.formData();
@@ -32,16 +34,16 @@ type ActionData = {
   message?: string;
 };
 
-const AddBookForm: React.FC = () => {
+const AddBookForm = () => {
   const actionData = useActionData() as ActionData;
+  const [genres, setGenres] = useState<SelectOption[]>([]);
 
   return (
     <Form id="add-book-form" method="post">
       <h2>Заповніть дані про книгу</h2>
       <p>
-        Обов'язкові поля позначені зірочкою <span>*</span>
+        Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
       </p>
-
       <div>
         <input
           type="text"
@@ -52,7 +54,7 @@ const AddBookForm: React.FC = () => {
           aria-required="true"
         />
         <label htmlFor="title">
-          Назва книги<span>*</span>
+          Назва книги<span className="asterisk">*</span>
         </label>
       </div>
       <div>
@@ -65,7 +67,7 @@ const AddBookForm: React.FC = () => {
           aria-required="true"
         />
         <label htmlFor="author">
-          Автор<span>*</span>
+          Автор<span className="asterisk">*</span>
         </label>
       </div>
       <div>
@@ -73,21 +75,27 @@ const AddBookForm: React.FC = () => {
           type="number"
           id="year"
           name="year"
-          placeholder="Рік вииходу"
+          placeholder="Рік виходу"
           min="0"
           max={new Date().getFullYear()}
         />
         <label htmlFor="year">Рік виходу</label>
       </div>
-      <div>
-        <input type="text" id="genres" name="genres" placeholder="Жанри" />
-        <label htmlFor="genres">Жанри</label>
-      </div>
+      <input type="hidden" name="genres" value={JSON.stringify(genres)} />
+      <Select
+        label="Жанри"
+        multiple
+        options={allGenres}
+        value={genres}
+        onChange={(o) => setGenres(o)}
+      />
       <div>
         <input type="url" id="cover" name="cover" placeholder="Обкладинка" />
         <label htmlFor="cover">Посилання на обкладинку</label>
       </div>
-      <button type="submit">Додати</button>
+      <button type="submit" id="submit-btn">
+        Додати
+      </button>
       {actionData?.success ? (
         <p>Книга успішно додана!</p>
       ) : (
@@ -96,5 +104,17 @@ const AddBookForm: React.FC = () => {
     </Form>
   );
 };
+
+const allGenres = [
+  'Фентезі',
+  'Пригоди',
+  'Детектив',
+  'Романтика',
+  'Історичне',
+  'Науково-популярне',
+  'Лірика',
+  'Для дітей',
+  'Для підлітків',
+];
 
 export default AddBookForm;
