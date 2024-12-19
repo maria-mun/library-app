@@ -6,7 +6,15 @@ const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const authors = await Author.find();
+    const searchQuery = req.query.search as string;
+    let authors;
+    if (searchQuery) {
+      authors = await Author.find({
+        name: { $regex: searchQuery, $options: 'i' },
+      }).select('_id name');
+    } else {
+      authors = await Author.find();
+    }
     res.json(authors);
   } catch (error) {
     res.status(500).json({ error: 'Помилка при отриманні авторів' });
