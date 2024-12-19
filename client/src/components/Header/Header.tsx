@@ -11,6 +11,7 @@ export default function Header() {
 
       <NavLink to="/allBooks">Всі книги</NavLink>
       <NavLink to="/addBookForm">Додати книгу</NavLink>
+      <NavLink to="/addAuthorForm">Додати автора</NavLink>
       <NavLink to="">Мої списки</NavLink>
     </header>
   );

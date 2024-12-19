@@ -5,6 +5,9 @@ import Root from './routes/Root/Root';
 import AllBooks from './routes/AllBooks/AllBooks';
 import Home from './routes/Home/Home';
 import AddBookForm, { action as addBookAction } from './routes/AddBook/AddBook';
+import AddAuthorForm, {
+  action as addAuthorAction,
+} from './routes/AddAuthor/AddAuthor';
 import BookDetail from './routes/BookDetail/BookDetail';
 import './main.css';
 
@@ -28,6 +31,11 @@ const router = createBrowserRouter([
     path: '/addBookForm',
     element: <AddBookForm />,
     action: addBookAction,
+  },
+  {
+    path: '/addAuthorForm',
+    element: <AddAuthorForm />,
+    action: addAuthorAction,
   },
 ]);
 
