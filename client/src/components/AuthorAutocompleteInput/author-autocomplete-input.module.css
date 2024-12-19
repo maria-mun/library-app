@@ -1,0 +1,82 @@
+.dropdown {
+  display: none;
+  max-height: 10em;
+  min-height: 5em;
+  overflow: auto;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent1);
+
+  background-color: var(--bg2);
+  position: absolute;
+  width: calc(100% + 2px);
+  left: -1px;
+  top: calc(100% + 4px);
+  z-index: 1000;
+  box-shadow: 0 10px 30px 20px rgba(0, 0, 0, 0.775);
+}
+
+.dropdown.open {
+  display: block;
+}
+
+.options {
+  list-style: none;
+}
+
+.option {
+  padding: var(--pad);
+  cursor: pointer;
+}
+
+.option:hover {
+  background-color: var(--accent2);
+  color: var(--accent1);
+}
+
+.dropdown::-webkit-scrollbar {
+  width: 10px;
+  height: 100%;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+  background-color: var(--neutral);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.dropdown::-webkit-scrollbar-button {
+  height: 0px;
+}
+
+.dropdown > p {
+  padding: var(--pad);
+  color: var(--neutral);
+  font-style: italic;
+}
+
+.clear-btn:hover {
+  color: var(--accent1);
+}
+
+.clear-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: var(--pad);
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--neutral);
+
+  scale: 150%;
+}
+
+.has-value {
+  background-color: var(--bg2);
+  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
+}
+
+input:disabled {
+  color: var(--neutral);
+}

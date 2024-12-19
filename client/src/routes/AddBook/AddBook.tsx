@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Form, useActionData } from 'react-router-dom';
 import './add-book-form.css';
 import Select from '../../components/Select/Select';
+import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
 import { SelectOption } from '../../components/Select/Select';
 
 export const action = async ({ request }: { request: Request }) => {
@@ -9,7 +10,7 @@ export const action = async ({ request }: { request: Request }) => {
   const bookData = Object.fromEntries(formData);
 
   try {
-    const response = await fetch('http://localhost:4000/books', {
+    const response = await fetch('http://localhost:4000/api/books', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(bookData),
@@ -57,28 +58,9 @@ const AddBookForm = () => {
           Назва книги<span className="asterisk">*</span>
         </label>
       </div>
+      <AuthorAutocompleteInput />
       <div>
-        <input
-          type="text"
-          id="author"
-          name="author"
-          placeholder="Автор"
-          required
-          aria-required="true"
-        />
-        <label htmlFor="author">
-          Автор<span className="asterisk">*</span>
-        </label>
-      </div>
-      <div>
-        <input
-          type="number"
-          id="year"
-          name="year"
-          placeholder="Рік виходу"
-          min="0"
-          max={new Date().getFullYear()}
-        />
+        <input type="number" id="year" name="year" placeholder="Рік виходу" />
         <label htmlFor="year">Рік виходу</label>
       </div>
       <input type="hidden" name="genres" value={JSON.stringify(genres)} />
