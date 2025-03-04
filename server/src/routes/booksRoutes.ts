@@ -39,9 +39,28 @@ router.get('/:id', async (req: Request, res: Response) => {
   const bookId = req.params.id;
   try {
     const book = await Book.findById(bookId);
+    if (!book) {
+      res.status(404).json({ message: 'Книга не знайдена' });
+    }
     res.status(200).json(book);
   } catch (error) {
     res.status(500).json({ error: 'Помилка при отриманні книги' });
+  }
+});
+
+router.delete('/:id', async (req: Request, res: Response) => {
+  const bookId = req.params.id;
+  try {
+    const deletedBook = await Book.findByIdAndDelete(bookId);
+
+    if (!deletedBook) {
+      res.status(404).json({ message: 'Книга не знайдена' });
+    }
+
+    res.status(200).json({ message: 'Книга успішно видалена' });
+  } catch (error) {
+    console.error('Помилка при видаленні книги:', error);
+    res.status(500).json({ message: 'Виникла помилка на сервері' });
   }
 });
 
