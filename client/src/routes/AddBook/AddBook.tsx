@@ -22,7 +22,8 @@ export const action = async ({ request }: { request: Request }) => {
 
     const data = await response.json();
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error) {
+    console.error(error);
     return {
       success: false,
       message: 'Помилка при додаванні книги до бази даних',

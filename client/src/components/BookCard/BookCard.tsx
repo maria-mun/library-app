@@ -1,48 +1,98 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
-import './book-card.css';
+import styles from './book-card.module.css';
+
+type Author = {
+  _id: string;
+  name: string;
+  country?: string;
+  books?: Book[];
+};
 
 type Book = {
   _id: string;
   title: string;
-  author: string;
-  year: number;
-  cover: string;
-  rating: number;
-  genres: string[];
+  author: Author;
+  year?: number;
+  cover?: string;
+  rating?: number;
+  status?: string;
+  genres?: string[];
 };
 
 type BookCardProps = {
   book: Book;
+  activeBookId: string | null;
+  onOpenOptions: (id: string | null) => void;
+  onDelete: () => void;
 };
 
-const BookCard: React.FC<BookCardProps> = ({ book }) => {
+const BookCard = ({
+  book,
+  activeBookId,
+  onOpenOptions,
+  onDelete,
+}: BookCardProps) => {
   return (
-    <div className="book">
+    <div className={styles.book}>
       <Link to={`/book/${book._id}`}>
-        <div className="cover">
+        <div className={styles.cover}>
           {book.cover && (
             <img src={book.cover} alt={`Обкладинка книги ${book.title}`}></img>
           )}
         </div>
       </Link>
-      <div className="details">
-        <h2 className="title">
+      <div className={styles.details}>
+        <h2 className={styles.title}>
           <Link to={`/book/${book._id}`}>{book.title}</Link>
         </h2>
-        <p className="author">{book.author}</p>
-        <p className="year">{book.year}</p>
-        <div className="rating">
+        <p className={styles.author}>
+          <Link to={`/author/${book.author._id}`}>{book.author.name}</Link>
+        </p>
+        <span className={styles.country}>{book.author.country}</span>
+        <span className={styles.year}>{book.year}</span>
+        <div className={styles.rating}>
           <span>⭐ {book.rating}</span>
         </div>
-        <div className="genres">
-          {book.genres.map((genre, index) => (
+        <div className={styles.genres}>
+          {book.genres?.map((genre, index) => (
             <span key={index}>{genre}</span>
           ))}
         </div>
       </div>
-      <div className="options-cont">
-        <button className="options-btn">⋮</button>
+      <div
+        className={styles['options-cont']}
+        tabIndex={0}
+        onBlur={() => onOpenOptions(null)}
+      >
+        <button
+          className={styles['options-btn']}
+          onClick={() =>
+            onOpenOptions(activeBookId === book._id ? null : book._id)
+          }
+        >
+          ⋮
+        </button>
+        {activeBookId === book._id && (
+          <div
+            className={styles.dropdown}
+            tabIndex={0}
+            onBlur={() => onOpenOptions(null)}
+          >
+            <ul className={styles.options}>
+              <li className={styles.option}>Додати в список</li>
+              <li className={styles.option}>Видалити зі списку</li>
+              <li
+                className={styles.option}
+                onClick={() => {
+                  onDelete();
+                  onOpenOptions(null);
+                }}
+              >
+                Видалити з бази даних
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

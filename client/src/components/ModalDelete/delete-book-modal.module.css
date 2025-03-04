@@ -1,0 +1,49 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal {
+  background: rgb(57, 57, 57);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.buttons {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.cancel,
+.confirm {
+  border: none;
+  border-radius: var(--border-radius);
+  color: rgb(255, 255, 255);
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel:hover,
+.confirm:hover {
+  transform: scale(105%);
+}
+
+.cancel {
+  background: gray;
+}
+
+.confirm {
+  background: var(--accent2);
+}

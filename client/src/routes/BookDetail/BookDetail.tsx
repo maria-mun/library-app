@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 
 type Book = {
@@ -12,13 +12,13 @@ type Book = {
   genres?: string[];
 };
 
-const BookDetail: React.FC = () => {
+const BookDetail = () => {
   const [bookData, setBookData] = useState<Book | null>(null);
   const { id } = useParams<{ id: string }>();
 
   const fetchBook = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/books/${id}`);
+      const response = await fetch(`http://localhost:4000/api/books/${id}`);
       const data = await response.json();
       setBookData(data);
     } catch (error) {

@@ -76,3 +76,10 @@ input:focus {
 #add-author-form #submit-btn:active {
   transform: scale(95%);
 }
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--accent1);
+  font-size: 2rem;
+}

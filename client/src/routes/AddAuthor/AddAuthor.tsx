@@ -1,4 +1,4 @@
-import { Form, useActionData } from 'react-router-dom';
+import { Form, useActionData, useNavigate } from 'react-router-dom';
 import './add-author.css';
 
 export const action = async ({ request }: { request: Request }) => {
@@ -18,7 +18,8 @@ export const action = async ({ request }: { request: Request }) => {
 
     const data = await response.json();
     return { success: true, data };
-  } catch (error: any) {
+  } catch (error) {
+    console.error(error);
     return {
       success: false,
       message: 'Помилка при додаванні автора до бази даних',
@@ -33,9 +34,18 @@ type ActionData = {
 
 const AddAuthorForm = () => {
   const actionData = useActionData() as ActionData;
+  const navigate = useNavigate();
 
   return (
     <Form id="add-author-form" method="post">
+      <button
+        className="close-btn"
+        onClick={() => {
+          navigate(-1);
+        }}
+      >
+        &otimes;
+      </button>
       <h2>Заповніть дані про автора</h2>
       <p>
         Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
@@ -65,6 +75,15 @@ const AddAuthorForm = () => {
           placeholder="Коротка інформація"
         />
         <label htmlFor="author">Коротка інформація</label>
+      </div>
+      <div>
+        <input
+          type="url"
+          id="photo"
+          name="photo"
+          placeholder="Посилання на фото"
+        />
+        <label htmlFor="photo">Посилання на фото</label>
       </div>
       <button type="submit" id="submit-btn">
         Додати

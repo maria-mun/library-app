@@ -21,7 +21,7 @@
   position: relative;
 }
 
-input {
+#add-book-form > input {
   padding: var(--pad);
   border-radius: var(--border-radius);
   background-color: var(--bg2);

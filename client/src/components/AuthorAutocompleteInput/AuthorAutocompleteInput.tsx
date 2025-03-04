@@ -1,25 +1,26 @@
 import React, { useState, useRef } from 'react';
 import styles from './author-autocomplete-input.module.css';
 
+interface Author {
+  _id: string;
+  name: string;
+}
+
 const AuthorAutocomplete = () => {
   const [inputValue, setInputValue] = useState<string>('');
   const [isDisabled, setIsDisabled] = useState<boolean>(false);
-  const [authors, setAuthors] = useState<{ _id: string; name: string }[]>([]);
-  const [selectedAuthor, setSelectedAuthor] = useState<{
-    _id: string;
-    name: string;
-  } | null>(null);
+  const [authors, setAuthors] = useState<Author[]>([]);
+  const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const debounceRef = useRef<any>(null);
+  const debounceRef = useRef<number | null>(null);
 
   const fetchAuthors = async (query: string) => {
     if (!query) {
       setAuthors([]);
       return;
     }
-
     setIsLoading(true);
     try {
       const response = await fetch(
@@ -41,7 +42,7 @@ const AuthorAutocomplete = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    setSelectedAuthor(null);
+    /*  setSelectedAuthor(null); */
     setIsOpen(true);
 
     if (debounceRef.current) {
@@ -95,6 +96,7 @@ const AuthorAutocomplete = () => {
           type="button"
           onClick={clearInput}
           className={styles['clear-btn']}
+          aria-label="Очистити поле"
         >
           &times;
         </button>

@@ -9,6 +9,8 @@ import AddAuthorForm, {
   action as addAuthorAction,
 } from './routes/AddAuthor/AddAuthor';
 import BookDetail from './routes/BookDetail/BookDetail';
+import AllAuthors from './routes/AllAuthors/AllAuthors';
+import AuthorDetail from './routes/AuthorDetail/AuthorDetail';
 import './main.css';
 
 const router = createBrowserRouter([
@@ -24,6 +26,14 @@ const router = createBrowserRouter([
       {
         path: '/book/:id',
         element: <BookDetail />,
+      },
+      {
+        path: '/allAuthors',
+        element: <AllAuthors />,
+      },
+      {
+        path: '/author/:id',
+        element: <AuthorDetail />,
       },
     ],
   },
