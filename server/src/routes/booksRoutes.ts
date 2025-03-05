@@ -6,8 +6,12 @@ import { Request, Response } from 'express';
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
+  const { sort = 'title', order = 'asc', author } = req.query;
   try {
-    const books = await Book.find().populate('author', '_id name country');
+    const filter = author ? { author } : {};
+    const books = await Book.find(filter)
+      .populate('author', '_id name country')
+      .sort({ [sort as string]: order === 'asc' ? 1 : -1 });
     res.json(books);
   } catch (error) {
     res.status(500).json({ error: 'Помилка при отриманні книг' });
