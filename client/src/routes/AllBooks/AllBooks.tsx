@@ -1,71 +1,31 @@
 import styles from './all-books.module.css';
-import { useState, useEffect } from 'react';
-import BookCard from '../../components/BookCard/BookCard';
-import DeleteBookModal from '../../components/ModalDelete/ModalDelete';
+import { useState } from 'react';
+import BookList from '../../components/BookList/BookList';
 
-type Author = {
-  _id: string;
-  name: string;
-  country?: string;
-  books?: Book[];
-};
+function AllBooksPage() {
+  const [sort, setSort] = useState<string | undefined>(undefined);
+  const [order, setOrder] = useState<string | undefined>(undefined);
 
-type Book = {
-  _id: string;
-  title: string;
-  author: Author;
-  year?: number;
-  cover?: string;
-  rating?: number;
-  genres?: string[];
-};
-
-function Books() {
-  const [books, setBooks] = useState<Book[]>([]);
-  const [activeBookId, setActiveBookId] = useState<string | null>(null);
-  const [modalBookId, setModalBookId] = useState<string | null>(null);
-
-  const fetchBooks = async () => {
-    try {
-      const response = await fetch('http://localhost:4000/api/books');
-      const data = await response.json();
-      setBooks(data);
-    } catch (error) {
-      console.error('Помилка при отриманні книг:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchBooks();
-  }, []);
-
-  const handleDelete = async (id: string) => {
-    await fetch(`http://localhost:4000/api/books/${id}`, { method: 'DELETE' });
-    fetchBooks();
-    setModalBookId(null);
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const [newSort, newOrder] = e.target.value.split('_'); // Формат value: 'title_asc', 'year_desc' і т.д.
+    setSort(newSort);
+    setOrder(newOrder);
   };
 
   return (
-    <>
-      <div className={styles.books}>
-        {books.map((book) => (
-          <BookCard
-            key={book._id}
-            book={book}
-            activeBookId={activeBookId}
-            onOpenOptions={setActiveBookId}
-            onDelete={() => setModalBookId(book._id)}
-          />
-        ))}
-      </div>
-      {modalBookId && (
-        <DeleteBookModal
-          onClose={() => setModalBookId(null)}
-          onConfirm={() => handleDelete(modalBookId)}
-        />
-      )}
-    </>
+    <div className={styles.container}>
+      <h1>All Books</h1>
+      <p>Сортувати за:</p>
+      <select onChange={handleSortChange} defaultValue="">
+        <option value="">Оберіть сортування</option>
+        <option value="title_asc">За назвою (А-Я)</option>
+        <option value="title_desc">За назвою (Я-А)</option>
+        <option value="year_asc">За роком (зростання)</option>
+        <option value="year_desc">За роком (спадання)</option>
+      </select>
+      <BookList sort={sort} order={order} />
+    </div>
   );
 }
 
-export default Books;
+export default AllBooksPage;

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from './author-detail.module.css';
-import BookCard from '../../components/BookCard/BookCard';
-
+import BookList from '../../components/BookList/BookList';
 type Author = {
   _id: string;
   name: string;
@@ -26,17 +25,17 @@ const AuthorDetail = () => {
   const [author, setAuthor] = useState<Author | null>(null);
   const { id } = useParams<{ id: string }>();
 
-  const fetchAuthor = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/api/authors/${id}`);
-      const data = await response.json();
-      setAuthor(data);
-    } catch (error) {
-      console.error('Error fetching author details:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchAuthor = async () => {
+      try {
+        const response = await fetch(`http://localhost:4000/api/authors/${id}`);
+        const data = await response.json();
+        setAuthor(data);
+      } catch (error) {
+        console.error('Error fetching author details:', error);
+      }
+    };
+
     fetchAuthor();
   }, [id]);
 
@@ -59,11 +58,7 @@ const AuthorDetail = () => {
           <p className={styles.description}>{author.description}</p>
         </div>
       </div>
-      <div className={styles.books}>
-        {author.books?.map((book) => {
-          return <BookCard book={book} key={book._id} />;
-        })}
-      </div>
+      <BookList authorId={id} />
     </>
   );
 };
