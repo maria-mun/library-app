@@ -1,8 +1,16 @@
-.books {
+select {
+  margin-left: 0.5rem;
+  background-color: var(--bg2);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--accent1);
+  color: var(--accent1);
+}
+
+.filters {
   display: flex;
   flex-direction: column;
-  align-items: center;
-
-  width: 100%;
-  gap: 0.5rem;
+  gap: 1rem;
+  width: clamp(380px, 100%, 800px);
+  padding: 3rem;
 }

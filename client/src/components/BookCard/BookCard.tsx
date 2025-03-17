@@ -59,11 +59,7 @@ const BookCard = ({
           ))}
         </div>
       </div>
-      <div
-        className={styles['options-cont']}
-        tabIndex={0}
-        onBlur={() => onOpenOptions(null)}
-      >
+      <div className={styles['options-cont']}>
         <button
           className={styles['options-btn']}
           onClick={() =>
@@ -73,11 +69,7 @@ const BookCard = ({
           ⋮
         </button>
         {activeBookId === book._id && (
-          <div
-            className={styles.dropdown}
-            tabIndex={0}
-            onBlur={() => onOpenOptions(null)}
-          >
+          <div className={styles.dropdown}>
             <ul className={styles.options}>
               <li className={styles.option}>Додати в список</li>
               <li className={styles.option}>Видалити зі списку</li>

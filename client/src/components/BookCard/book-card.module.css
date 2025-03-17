@@ -106,10 +106,10 @@
   transition: all 0.3s ease;
 }
 
-/* .genres > span:hover {
-  color: var(--accent2);
-  border: 1px solid var(--accent2);
-} */
+.genres > span:hover {
+  color: var(--accent1);
+  border: 1px solid var(--accent1);
+}
 
 .options-btn {
   border: none;
@@ -154,5 +154,5 @@
 }
 
 .option:hover {
-  background-color: var(--accent2);
+  background-color: rgb(80, 128, 152);
 }

@@ -8,7 +8,7 @@
 :root {
   font-size: 16px;
   --border-radius: 5px;
-  --accent2: #de0000;
+  --accent2: #fd4b1f;
 }
 
 :root {
@@ -18,13 +18,13 @@
   --neutral: rgb(103, 103, 103);
 }
 
-/* :root {
-  --bg1: rgb(29, 29, 29);
+:root {
   --bg2: rgb(22, 22, 22);
+  --bg1: rgb(38, 38, 38);
   --accent1: rgb(255, 255, 255);
 
   --neutral: rgb(122, 122, 122);
-} */
+}
 
 body {
   background-color: var(--bg2);

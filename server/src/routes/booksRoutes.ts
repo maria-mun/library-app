@@ -6,9 +6,19 @@ import { Request, Response } from 'express';
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
-  const { sort = 'title', order = 'asc', author } = req.query;
+  const { sort = 'title', order = 'asc', author, search } = req.query;
   try {
-    const filter = author ? { author } : {};
+    const filter: any = {};
+    // Фільтр за автором, якщо передано
+    if (author) {
+      filter.author = author;
+    }
+
+    // Фільтр за пошуком у назві книги або імені автора
+    if (search) {
+      const searchRegex = new RegExp(search as string, 'i'); // 'i' - регістронезалежний пошук
+      filter.$or = [{ title: searchRegex }];
+    }
     const books = await Book.find(filter)
       .populate('author', '_id name country')
       .sort({ [sort as string]: order === 'asc' ? 1 : -1 });

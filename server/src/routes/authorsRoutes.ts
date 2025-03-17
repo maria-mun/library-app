@@ -27,7 +27,6 @@ router.post('/', async (req: Request, res: Response) => {
     const createdAuthor = await newAuthor.save();
     res.status(200).json(createdAuthor);
   } catch (error) {
-    console.error('Помилка при додаванні автора:', error);
     res.status(500).json({ message: 'Не вдалося додати автора', error });
   }
 });

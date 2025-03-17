@@ -2,6 +2,7 @@ import styles from './booklist.module.css';
 import { useState, useEffect } from 'react';
 import BookCard from '../BookCard/BookCard';
 import DeleteBookModal from '../ModalDelete/ModalDelete';
+import Loader from '../Loader/Loader';
 
 type Author = {
   _id: string;
@@ -24,18 +25,22 @@ type BooksProps = {
   authorId?: string;
   sort?: string;
   order?: string;
+  search?: string;
 };
 
-function BookList({ authorId, sort, order }: BooksProps) {
+function BookList({ authorId, sort, order, search }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [activeBookId, setActiveBookId] = useState<string | null>(null);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchBooks();
-  }, [authorId, sort, order]);
+    setTimeout(fetchBooks, 2000);
+    /*   fetchBooks(); */
+  }, [authorId, sort, order, search]);
 
   const fetchBooks = async () => {
+    setIsLoading(true);
     try {
       let url = 'http://localhost:4000/api/books';
       const params = new URLSearchParams();
@@ -49,6 +54,9 @@ function BookList({ authorId, sort, order }: BooksProps) {
       if (order) {
         params.append('order', order);
       }
+      if (search) {
+        params.append('search', search);
+      }
 
       if (params.toString()) {
         url += `?${params.toString()}`;
@@ -59,6 +67,8 @@ function BookList({ authorId, sort, order }: BooksProps) {
       console.log('books fetched');
     } catch (error) {
       console.error('Помилка при отриманні книг:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,22 +78,30 @@ function BookList({ authorId, sort, order }: BooksProps) {
     setModalBookId(null);
   };
 
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (search && books.length === 0) {
+    return <p>Книг за вашим запитом не знайдено.</p>;
+  }
+
+  if (books.length === 0) {
+    return <p>Книг поки немає.</p>;
+  }
+
   return (
     <>
       <div className={styles.books}>
-        {books.length > 0 ? (
-          books.map((book) => (
-            <BookCard
-              key={book._id}
-              book={book}
-              activeBookId={activeBookId}
-              onOpenOptions={setActiveBookId}
-              onDelete={() => setModalBookId(book._id)}
-            />
-          ))
-        ) : (
-          <p>Книг поки немає.</p>
-        )}
+        {books.map((book) => (
+          <BookCard
+            key={book._id}
+            book={book}
+            activeBookId={activeBookId}
+            onOpenOptions={setActiveBookId}
+            onDelete={() => setModalBookId(book._id)}
+          />
+        ))}
       </div>
       {modalBookId && (
         <DeleteBookModal
