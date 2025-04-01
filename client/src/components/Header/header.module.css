@@ -14,7 +14,7 @@ header {
   border-bottom: 1px solid var(--accent2);
 }
 
-header > a {
+.link {
   text-decoration: none;
   color: var(--accent1);
   border-bottom: 2px solid var(--bg1);
@@ -22,13 +22,33 @@ header > a {
   line-height: 1.7rem;
   transition: all 0.3s ease;
 }
-header h1 a {
+h1 .link {
   font-size: 2rem;
   text-decoration: none;
   color: var(--accent2);
   font-weight: bold;
 }
-header > a:hover {
+header > .link:hover {
   color: var(--accent2);
   border-bottom: 2px solid var(--accent2);
+}
+
+.button1 {
+  background-color: rgb(45, 73, 101);
+  text-decoration: none;
+  color: white;
+  padding: 0.4em 0.6em;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.button1:hover {
+  background-color: rgb(64, 95, 125);
+}
+
+.button1:active {
+  transform: scale(0.95);
 }

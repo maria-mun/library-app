@@ -1,0 +1,23 @@
+.btn {
+  background: rgb(187, 67, 44);
+
+  border: none;
+  border-radius: var(--border-radius);
+  color: rgb(255, 255, 255);
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: rgb(219, 89, 28);
+  cursor: pointer;
+}
+
+.btn.disabled,
+.btn.disabled:hover {
+  background-color: var(--neutral);
+
+  color: white;
+  cursor: not-allowed;
+}

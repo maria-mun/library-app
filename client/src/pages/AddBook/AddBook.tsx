@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Form, useActionData } from 'react-router-dom';
-import './add-book-form.css';
+import styles from './add-book-form.module.css';
 import Select from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
 import { SelectOption } from '../../components/Select/Select';
@@ -41,28 +41,37 @@ const AddBookForm = () => {
   const [genres, setGenres] = useState<SelectOption[]>([]);
 
   return (
-    <Form id="add-book-form" method="post">
+    <Form id={styles['add-book-form']} method="post">
       <h2>Заповніть дані про книгу</h2>
       <p>
         Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
       </p>
       <div>
         <input
+          className={styles.input}
           type="text"
-          id="title"
+          id={styles.title}
           name="title"
           placeholder="Назва книги"
           required
           aria-required="true"
         />
-        <label htmlFor="title">
+        <label htmlFor="title" className={styles.label}>
           Назва книги<span className="asterisk">*</span>
         </label>
       </div>
       <AuthorAutocompleteInput />
       <div>
-        <input type="number" id="year" name="year" placeholder="Рік виходу" />
-        <label htmlFor="year">Рік виходу</label>
+        <input
+          className={styles.input}
+          type="number"
+          id={styles.year}
+          name="year"
+          placeholder="Рік виходу"
+        />
+        <label htmlFor="year" className={styles.label}>
+          Рік виходу
+        </label>
       </div>
       <input type="hidden" name="genres" value={JSON.stringify(genres)} />
       <Select
@@ -73,10 +82,18 @@ const AddBookForm = () => {
         onChange={(o) => setGenres(o)}
       />
       <div>
-        <input type="url" id="cover" name="cover" placeholder="Обкладинка" />
-        <label htmlFor="cover">Посилання на обкладинку</label>
+        <input
+          className={styles.input}
+          type="url"
+          id={styles.cover}
+          name="cover"
+          placeholder="Обкладинка"
+        />
+        <label htmlFor="cover" className={styles.label}>
+          Посилання на обкладинку
+        </label>
       </div>
-      <button type="submit" id="submit-btn">
+      <button type="submit" id={styles['submit-btn']}>
         Додати
       </button>
       {actionData?.success ? (

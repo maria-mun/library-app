@@ -1,4 +1,4 @@
-#add-book-form {
+#add-author-form {
   margin: 4rem auto 6rem;
   display: flex;
   flex-direction: column;
@@ -8,20 +8,20 @@
   width: fit-content;
 }
 
-#add-book-form > p {
+#add-author-form > p {
   font-size: 0.8rem;
 }
 
-#add-book-form .asterisk {
-  color: darkred;
-}
-
-#add-book-form > div {
+#add-author-form > div {
   --pad: 0.5rem;
   position: relative;
 }
 
-#add-book-form > input {
+.asterisk {
+  color: darkred;
+}
+
+.input {
   padding: var(--pad);
   border-radius: var(--border-radius);
   background-color: var(--bg2);
@@ -33,7 +33,7 @@
   line-height: 1.8em;
 }
 
-label {
+.label {
   background-color: var(--bg2);
   color: var(--neutral);
   font-size: 1rem;
@@ -49,20 +49,20 @@ label {
   line-height: 1.8em;
 }
 
-input::placeholder {
+.input::placeholder {
   opacity: 0;
 }
-input:focus + label,
-input:not(:placeholder-shown) + label {
+.input:focus + .label,
+.input:not(:placeholder-shown) + .label {
   background-color: var(--bg2);
   transform: translateY(calc(-50% - var(--pad))) scale(0.8);
 }
 
-input:focus {
+.input:focus {
   outline: 1px solid var(--accent1);
 }
 
-#add-book-form #submit-btn {
+#submit-btn {
   background: var(--accent2);
 
   border: none;
@@ -73,6 +73,13 @@ input:focus {
   transition: all 0.2s ease;
 }
 
-#add-book-form #submit-btn:active {
+#submit-btn:active {
   transform: scale(95%);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--accent1);
+  font-size: 2rem;
 }

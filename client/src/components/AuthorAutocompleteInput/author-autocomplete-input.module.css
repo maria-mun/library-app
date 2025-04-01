@@ -1,3 +1,44 @@
+.input {
+  padding: var(--pad);
+  border-radius: var(--border-radius);
+  background-color: var(--bg2);
+  border: 1px solid var(--accent1);
+  color: var(--accent1);
+  font-size: 1rem;
+  width: 20rem;
+  outline: none;
+  line-height: 1.8em;
+}
+
+.label {
+  background-color: var(--bg2);
+  color: var(--neutral);
+  font-size: 1rem;
+  position: absolute;
+  left: var(--pad);
+  top: var(--pad);
+  background: inherit;
+  padding-inline: 0.3em;
+  transition: transform 200ms;
+  pointer-events: none;
+  transform-origin: left;
+  translate: -0.3em;
+  line-height: 1.8em;
+}
+
+.input::placeholder {
+  opacity: 0;
+}
+.input:focus + .label,
+.input:not(:placeholder-shown) + .label {
+  background-color: var(--bg2);
+  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
+}
+
+.input:focus {
+  outline: 1px solid var(--accent1);
+}
+
 .dropdown {
   display: none;
   max-height: 10em;
@@ -77,6 +118,6 @@
   transform: translateY(calc(-50% - var(--pad))) scale(0.8);
 }
 
-input:disabled {
+.input:disabled {
   color: var(--neutral);
 }

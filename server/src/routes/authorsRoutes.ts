@@ -41,4 +41,21 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
+router.delete('/:id', async (req: Request, res: Response) => {
+  const authorId = req.params.id;
+  try {
+    const author = await Author.findById(authorId);
+    if (!author) {
+      res.status(404).json({ message: 'Автора не знайдено' });
+    }
+
+    await Author.findByIdAndDelete(authorId);
+
+    res.status(200).json({ message: 'Автора успішно видалено' });
+  } catch (error) {
+    console.error('Помилка при видаленні автора:', error);
+    res.status(500).json({ message: 'Виникла помилка на сервері' });
+  }
+});
+
 export default router;

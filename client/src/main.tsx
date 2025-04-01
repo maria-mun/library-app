@@ -1,17 +1,19 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Root from './routes/Root/Root';
-import AllBooks from './routes/AllBooks/AllBooks';
-import Home from './routes/Home/Home';
-import AddBookForm, { action as addBookAction } from './routes/AddBook/AddBook';
+import { AuthProvider } from './context/AuthContext';
+import Root from './pages/Root/Root';
+import AllBooks from './pages/AllBooks/AllBooks';
+import Home from './pages/Home/Home';
+import AddBookForm, { action as addBookAction } from './pages/AddBook/AddBook';
 import AddAuthorForm, {
   action as addAuthorAction,
-} from './routes/AddAuthor/AddAuthor';
-import BookDetail from './routes/BookDetail/BookDetail';
-import AllAuthors from './routes/AllAuthors/AllAuthors';
-import AuthorDetail from './routes/AuthorDetail/AuthorDetail';
+} from './pages/AddAuthor/AddAuthor';
+import BookDetail from './pages/BookDetail/BookDetail';
+import AllAuthors from './pages/AllAuthors/AllAuthors';
+import AuthorDetail from './pages/AuthorDetail/AuthorDetail';
 import './main.css';
+import RegisterForm from './pages/RegisterForm/RegisterForm';
 
 const router = createBrowserRouter([
   {
@@ -47,10 +49,16 @@ const router = createBrowserRouter([
     element: <AddAuthorForm />,
     action: addAuthorAction,
   },
+  {
+    path: '/register',
+    element: <RegisterForm />,
+  },
 ]);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </StrictMode>
 );

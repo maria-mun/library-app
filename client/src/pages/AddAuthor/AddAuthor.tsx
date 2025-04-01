@@ -1,5 +1,5 @@
 import { Form, useActionData, useNavigate } from 'react-router-dom';
-import './add-author.css';
+import styles from './add-author.module.css';
 
 export const action = async ({ request }: { request: Request }) => {
   const formData = await request.formData();
@@ -37,9 +37,9 @@ const AddAuthorForm = () => {
   const navigate = useNavigate();
 
   return (
-    <Form id="add-author-form" method="post">
+    <Form id={styles['add-author-form']} method="post">
       <button
-        className="close-btn"
+        className={styles['close-btn']}
         onClick={() => {
           navigate(-1);
         }}
@@ -52,40 +52,55 @@ const AddAuthorForm = () => {
       </p>
       <div>
         <input
+          className={styles.input}
           type="text"
-          id="name"
+          id={styles.name}
           name="name"
           placeholder="Ім'я автора"
           required
           aria-required="true"
         />
-        <label htmlFor="name">
-          Ім'я автора<span className="asterisk">*</span>
+        <label htmlFor="name" className={styles.label}>
+          Ім'я автора<span className={styles.asterisk}>*</span>
         </label>
       </div>
       <div>
-        <input type="text" id="country" name="country" placeholder="Країна" />
-        <label htmlFor="country">Країна</label>
+        <input
+          className={styles.input}
+          type="text"
+          id={styles.country}
+          name="country"
+          placeholder="Країна"
+        />
+        <label htmlFor="country" className={styles.label}>
+          Країна
+        </label>
       </div>
       <div>
         <input
+          className={styles.input}
           type="text"
-          id="description"
+          id={styles.description}
           name="description"
           placeholder="Коротка інформація"
         />
-        <label htmlFor="author">Коротка інформація</label>
+        <label htmlFor="author" className={styles.label}>
+          Коротка інформація
+        </label>
       </div>
       <div>
         <input
+          className={styles.input}
           type="url"
-          id="photo"
+          id={styles.photo}
           name="photo"
           placeholder="Посилання на фото"
         />
-        <label htmlFor="photo">Посилання на фото</label>
+        <label htmlFor="photo" className={styles.label}>
+          Посилання на фото
+        </label>
       </div>
-      <button type="submit" id="submit-btn">
+      <button type="submit" id={styles['submit-btn']}>
         Додати
       </button>
       {actionData?.success ? (

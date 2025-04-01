@@ -14,7 +14,7 @@ const AuthorAutocomplete = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const debounceRef = useRef<number | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchAuthors = async (query: string) => {
     if (!query) {
@@ -79,6 +79,7 @@ const AuthorAutocomplete = () => {
   return (
     <div className={styles.container}>
       <input
+        className={styles.input}
         disabled={isDisabled}
         type="text"
         id="author"
@@ -101,7 +102,10 @@ const AuthorAutocomplete = () => {
           &times;
         </button>
       )}
-      <label htmlFor="author" className={isDisabled ? styles['has-value'] : ''}>
+      <label
+        htmlFor="author"
+        className={`${styles.label} ${isDisabled ? styles['has-value'] : ''}`}
+      >
         Автор<span className="asterisk">*</span>
       </label>
 
