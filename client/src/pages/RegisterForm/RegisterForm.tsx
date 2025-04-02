@@ -78,10 +78,23 @@ const RegisterForm = () => {
         password.value,
         displayName.value
       );
+
+      const response = await fetch('http://localhost:4000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firebaseUid: user.uid,
+          name: user.displayName,
+          email: user.email,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Помилка при додаванні користувача до бази даних');
+      }
       setSuccessMessage(`Користувач ${user.displayName} зареєстрований!`);
       setTimeout(() => navigate('/'), 2000);
     } catch (err) {
-      console.log('Не вдалося зареєструвати користувача', err);
       const error = err as { code: string };
       if (error.code === 'auth/email-already-in-use') {
         setEmail((prev) => ({ ...prev, isTaken: true }));
