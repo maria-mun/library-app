@@ -31,6 +31,7 @@ const RegisterForm = () => {
 
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   function handleDisplayNameInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -126,8 +127,8 @@ const RegisterForm = () => {
   }
 
   return (
-    <form className={styles.container}>
-      <h1>Реєстрація</h1>
+    <form className={styles.form}>
+      <h1 className={styles.title}>Реєстрація</h1>
       <Input
         name="displayName"
         type="text"
@@ -156,7 +157,7 @@ const RegisterForm = () => {
       />
       <Input
         name="password"
-        type="password"
+        type={showPassword ? 'text' : 'password'}
         label="Пароль"
         onChange={handlePasswordInput}
         isValid={password.isValid}
@@ -167,7 +168,7 @@ const RegisterForm = () => {
       />
       <Input
         name="confirmPassword"
-        type="password"
+        type={showPassword ? 'text' : 'password'}
         label="Підтвердіть пароль"
         onChange={handleConfirmPasswordInput}
         isValid={confirmPassword.isValid}
@@ -176,7 +177,19 @@ const RegisterForm = () => {
         value={confirmPassword.value}
         errorMsg="Паролі не збігаються!"
       />
-
+      <label htmlFor="showPassword">
+        <input
+          type="checkbox"
+          id={'showPassword'}
+          className={styles.checkbox}
+          name="showPassword"
+          checked={showPassword}
+          onChange={() => {
+            setShowPassword((prev) => !prev);
+          }}
+        />
+        Показати пароль
+      </label>
       <button
         className={styles.btn}
         onClick={handleSubmit}

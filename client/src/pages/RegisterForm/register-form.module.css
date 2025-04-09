@@ -1,4 +1,4 @@
-.container {
+.form {
   margin: 4rem auto 6rem;
   display: flex;
   flex-direction: column;
@@ -8,6 +8,13 @@
   background-color: var(--bg1);
   border-radius: 10px;
   padding: 1em;
+}
+
+.title {
+  font-size: 2rem;
+  color: var(--accent2);
+  text-align: center;
+  margin-bottom: 0.5em;
 }
 
 .btn {
@@ -61,4 +68,8 @@
   align-items: center;
   justify-content: center;
   gap: 2em;
+}
+
+.checkbox {
+  margin-right: 1em;
 }

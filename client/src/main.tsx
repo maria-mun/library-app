@@ -14,6 +14,7 @@ import AllAuthors from './pages/AllAuthors/AllAuthors';
 import AuthorDetail from './pages/AuthorDetail/AuthorDetail';
 import './main.css';
 import RegisterForm from './pages/RegisterForm/RegisterForm';
+import LoginForm from './pages/LoginForm/LoginForm';
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterForm />,
+  },
+  {
+    path: '/login',
+    element: <LoginForm />,
   },
 ]);
 

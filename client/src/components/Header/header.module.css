@@ -1,5 +1,5 @@
 header {
-  background: var(--bg1);
+  background: var(--bg2);
   position: fixed;
   z-index: 10000;
   width: 100%;
@@ -17,7 +17,7 @@ header {
 .link {
   text-decoration: none;
   color: var(--accent1);
-  border-bottom: 2px solid var(--bg1);
+  border-bottom: 2px solid var(--bg2);
   font-size: 1.1rem;
   line-height: 1.7rem;
   transition: all 0.3s ease;
@@ -33,22 +33,116 @@ header > .link:hover {
   border-bottom: 2px solid var(--accent2);
 }
 
-.button1 {
-  background-color: rgb(45, 73, 101);
+.login-buttons {
+  padding-left: 1em;
+  display: flex;
+  gap: 0.5em;
+  align-items: center;
+  border-left: 1px solid var(--neutral);
+}
+
+.button {
   text-decoration: none;
-  color: white;
+  color: var(--accent1);
   padding: 0.4em 0.6em;
   border: none;
   border-radius: 0.5rem;
   font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 
-.button1:hover {
-  background-color: rgb(64, 95, 125);
+.login-btn {
+  background-color: var(--accent1);
+  color: var(--bg1);
 }
 
-.button1:active {
-  transform: scale(0.95);
+.register-btn {
+  color: var(--accent1);
+  border: 1px solid var(--accent1);
+}
+
+.login-btn:hover {
+  color: var(--accent1);
+  background-color: var(--accent2);
+}
+
+.register-btn:hover {
+  border: 1px solid var(--accent2);
+  color: var(--accent2);
+}
+
+.profileMenu {
+  position: relative;
+}
+
+.dropdown {
+  position: absolute;
+  top: 3rem;
+  right: 1rem;
+  background-color: var(--bg1);
+  border-radius: 0.5em;
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+  padding: 1em;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  width: 10em;
+  font-size: 1rem;
+  color: var(--accent1);
+  box-shadow: black 0px 0px 10px 0px;
+}
+
+.menu-option {
+  text-decoration: none;
+  color: var(--accent1);
+  padding: 0.5em 0.8em;
+  border-radius: 0.5em;
+  font-size: 1.1rem;
+  /*   transition: all 0.2s ease-in-out; */
+}
+
+.menu-option:hover {
+  background-color: var(--bg2);
+}
+
+.logout-btn {
+  background-color: var(--bg1);
+  cursor: pointer;
+  border: none;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.logout-btn:hover {
+  background-color: var(--bg2);
+  color: red;
+}
+
+.logout-icon {
+  margin-right: 0.5em;
+}
+
+.profile {
+  padding: 0.5em 0.8em;
+  border-radius: 0.5em;
+  font-size: 1.1rem;
+  /*  transition: all 0.3s ease-in-out; */
+  background-color: var(--bg2);
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.profile:hover {
+  background-color: var(--bg1);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--neutral);
 }

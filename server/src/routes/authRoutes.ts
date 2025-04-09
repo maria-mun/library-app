@@ -17,4 +17,16 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/user-exists', async (req: Request, res: Response) => {
+  const { email } = req.query;
+
+  try {
+    const user = await User.findOne({ email });
+    res.json({ exists: !!user });
+  } catch (error) {
+    console.error('Помилка при перевірці email:', error);
+    res.status(500).json({ exists: false, message: 'Помилка сервера' });
+  }
+});
+
 export default router;
