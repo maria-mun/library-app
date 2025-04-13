@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   firebaseUid: { type: String, required: true, unique: true },
 
-  readBooks: [
+  ratedBooks: [
     {
       bookId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -13,6 +13,16 @@ const userSchema = new mongoose.Schema({
         required: true,
       },
       rating: { type: Number, default: null },
+    },
+  ],
+
+  readBooks: [
+    {
+      bookId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Book',
+        required: true,
+      },
       dateAdded: { type: Date, default: Date.now },
     },
   ],
