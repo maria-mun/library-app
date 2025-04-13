@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import styles from './book-card.module.css';
+import { useState, useEffect, useRef } from 'react';
 
 type Author = {
   _id: string;
@@ -21,17 +22,29 @@ type Book = {
 
 type BookCardProps = {
   book: Book;
-  activeBookId: string | null;
-  onOpenOptions: (id: string | null) => void;
   onDelete: () => void;
 };
 
-const BookCard = ({
-  book,
-  activeBookId,
-  onOpenOptions,
-  onDelete,
-}: BookCardProps) => {
+const BookCard = ({ book, onDelete }: BookCardProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className={styles.book}>
       <Link to={`/book/${book._id}`}>
@@ -59,16 +72,14 @@ const BookCard = ({
           ))}
         </div>
       </div>
-      <div className={styles['options-cont']}>
+      <div className={styles['options-cont']} ref={dropdownRef}>
         <button
           className={styles['options-btn']}
-          onClick={() =>
-            onOpenOptions(activeBookId === book._id ? null : book._id)
-          }
+          onClick={() => setIsOpen(!isOpen)}
         >
           ⋮
         </button>
-        {activeBookId === book._id && (
+        {isOpen && (
           <div className={styles.dropdown}>
             <ul className={styles.options}>
               <li className={styles.option}>Додати в список</li>
@@ -76,8 +87,8 @@ const BookCard = ({
               <li
                 className={styles.option}
                 onClick={() => {
+                  setIsOpen(false);
                   onDelete();
-                  onOpenOptions(null);
                 }}
               >
                 Видалити з бази даних

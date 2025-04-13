@@ -30,13 +30,11 @@ type BooksProps = {
 
 function BookList({ authorId, sort, order, search }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
-  const [activeBookId, setActiveBookId] = useState<string | null>(null);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(fetchBooks, 2000);
-    /*   fetchBooks(); */
+    fetchBooks();
   }, [authorId, sort, order, search]);
 
   const fetchBooks = async () => {
@@ -79,7 +77,7 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
   };
 
   if (isLoading) {
-    return <Loader />;
+    return <Loader dotSize={50} />;
   }
 
   if (search && books.length === 0) {
@@ -97,8 +95,6 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
           <BookCard
             key={book._id}
             book={book}
-            activeBookId={activeBookId}
-            onOpenOptions={setActiveBookId}
             onDelete={() => setModalBookId(book._id)}
           />
         ))}
