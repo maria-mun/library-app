@@ -130,29 +130,57 @@
 }
 
 .dropdown {
-  max-height: 10em;
-
-  overflow: auto;
-  border-radius: var(--border-radius);
-
-  background-color: rgb(56, 56, 56);
   position: absolute;
-  width: 200px;
-  right: 50px;
-  top: 20px;
-  z-index: 1000;
-  /* box-shadow: 0 0 15px 10px rgba(45, 45, 45, 0.775); */
+  top: 3rem;
+  right: 1rem;
+  background-color: var(--bg1);
+  border-radius: 0.5em;
+  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
+  padding: 0.5em;
+  z-index: 10000;
+
+  width: 10em;
+  font-size: 1rem;
+  color: var(--accent1);
+  box-shadow: black 0px 0px 10px 0px;
 }
 
-.options {
+.options-list {
   list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
 }
 
 .option {
-  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-decoration: none;
+  color: var(--accent1);
+  padding: 0.5em 0.8em;
+  border-radius: 0.5em;
+
   cursor: pointer;
+  /*   transition: all 0.2s ease-in-out; */
 }
 
 .option:hover {
-  background-color: rgb(80, 128, 152);
+  background-color: var(--bg2);
+}
+
+.readBooks.active {
+  background-color: rgba(21, 255, 0, 0.2);
+}
+
+.currentlyReadingBooks.active {
+  background-color: rgba(255, 196, 0, 0.46);
+}
+
+.plannedBooks.active {
+  background-color: rgba(0, 145, 255, 0.2);
+}
+
+.abandonedBooks.active {
+  background-color: rgba(255, 47, 0, 0.2);
 }

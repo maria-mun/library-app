@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import BookCard from '../BookCard/BookCard';
 import DeleteBookModal from '../ModalDelete/ModalDelete';
 import Loader from '../Loader/Loader';
+import { useAuth } from '../../context/AuthContext';
+import { User } from 'firebase/auth';
 
 type Author = {
   _id: string;
@@ -32,10 +34,17 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { user, loadingUser } = useAuth() as {
+    user: User;
+    loadingUser: boolean;
+  };
 
+  console.log('booklist render');
   useEffect(() => {
-    fetchBooks();
-  }, [authorId, sort, order, search]);
+    if (!loadingUser) {
+      fetchBooks();
+    }
+  }, [authorId, sort, order, search, loadingUser]);
 
   const fetchBooks = async () => {
     setIsLoading(true);
@@ -54,6 +63,9 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
       }
       if (search) {
         params.append('search', search);
+      }
+      if (user) {
+        params.append('firebaseUid', user.uid);
       }
 
       if (params.toString()) {
@@ -93,6 +105,7 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
       <div className={styles.books}>
         {books.map((book) => (
           <BookCard
+            user={user}
             key={book._id}
             book={book}
             onDelete={() => setModalBookId(book._id)}

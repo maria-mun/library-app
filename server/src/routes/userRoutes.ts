@@ -21,23 +21,40 @@ router.post('/:userId/books/:list', async (req: Request, res: Response) => {
   }
 
   try {
-    const update = {
-      $addToSet: {
-        [list]: { bookId },
-      },
-    };
-
-    const user = await User.findByIdAndUpdate(userId, update, { new: true });
+    const user = await User.findOne({ firebaseUid: userId });
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    res.json({ message: 'Book added to list', user });
+    const listData = user[list as keyof typeof user] as { bookId: string }[];
+    const isInList = listData.some((item) => item.bookId.toString() === bookId);
+
+    let updatedUser;
+    if (isInList) {
+      // Видаляємо
+      updatedUser = await User.findOneAndUpdate(
+        { firebaseUid: userId },
+        { $pull: { [list]: { bookId } } },
+        { new: true }
+      );
+      res.json({ message: 'Book removed from list', user: updatedUser });
+      return;
+    } else {
+      // Додаємо
+      updatedUser = await User.findOneAndUpdate(
+        { firebaseUid: userId },
+        { $addToSet: { [list]: { bookId } } },
+        { new: true }
+      );
+      res.json({ message: 'Book added to list', user: updatedUser });
+      return;
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+    return;
   }
 });
 
@@ -45,14 +62,13 @@ router.post('/:userId/rating', async (req: Request, res: Response) => {
   const { userId } = req.params;
   const { bookId, rating } = req.body;
 
-  // Перевірка рейтингу
   if (!bookId || typeof rating !== 'number' || rating < 1 || rating > 10) {
     res.status(400).json({ error: 'Invalid bookId or rating' });
     return;
   }
 
   try {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ firebaseUid: userId });
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });

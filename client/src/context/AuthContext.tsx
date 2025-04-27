@@ -6,7 +6,7 @@ import { loginUser, registerUser } from '../firebase/auth'; // Функції л
 // Типи для контексту
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  loadingUser: boolean;
   loginUser: (email: string, password: string) => Promise<User | null>;
   registerUser: (
     email: string,
@@ -22,13 +22,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Провайдер контексту
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loadingUser, setLoadingUser] = useState(true);
 
   // Стежимо за зміною авторизації
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
-      setLoading(false);
+      setLoadingUser(false);
     });
 
     return () => unsubscribe(); // Прибираємо підписку при розмонтуванні
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, loginUser, registerUser, logoutUser }}
+      value={{ user, loadingUser, loginUser, registerUser, logoutUser }}
     >
       {children}
     </AuthContext.Provider>
