@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase/firebaseConfig';
 import Input from '../../components/Input/Input';
 import styles from './login-form.module.css';
+import XIcon from '../../components/Icons/XIcon';
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -92,8 +93,10 @@ const LoginForm = () => {
 
   return (
     <form className={styles.form}>
+      <button className={styles['close-btn']} onClick={() => navigate('/')}>
+        <XIcon size={30} />
+      </button>
       <h2 className={styles.title}>Вхід</h2>
-
       <Input
         name="email"
         type="text"
@@ -120,7 +123,6 @@ const LoginForm = () => {
         isFocused={password.isFocused}
         errorMsg="Пароль не вірний"
       />
-
       <label htmlFor="showPassword">
         <input
           type="checkbox"
@@ -134,7 +136,6 @@ const LoginForm = () => {
         />
         Показати пароль
       </label>
-
       {error && <div className={styles.error}>{error}</div>}
       <button
         className={styles.btn}
@@ -143,6 +144,12 @@ const LoginForm = () => {
       >
         {loading ? <span className={styles.spinner}></span> : 'Увійти'}
       </button>
+      <p className={styles.text}>
+        Ще не зареєстровані?{' '}
+        <Link to="/register" className={styles.link}>
+          Реєстрація
+        </Link>
+      </p>
     </form>
   );
 };

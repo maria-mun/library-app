@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../../firebase/auth';
 import styles from './register-form.module.css';
 import Input from '../../components/Input/Input';
+import XIcon from '../../components/Icons/XIcon';
 
 const RegisterForm = () => {
   const [displayName, setDisplayName] = useState({
@@ -128,7 +129,12 @@ const RegisterForm = () => {
 
   return (
     <form className={styles.form}>
+      <button className={styles['close-btn']} onClick={() => navigate('/')}>
+        <XIcon size={30} />
+      </button>
+
       <h1 className={styles.title}>Реєстрація</h1>
+
       <Input
         name="displayName"
         type="text"
@@ -191,12 +197,18 @@ const RegisterForm = () => {
         Показати пароль
       </label>
       <button
-        className={styles.btn}
+        className={styles['submit-btn']}
         onClick={handleSubmit}
         disabled={!formIsValid || loading}
       >
         {loading ? <span className={styles.spinner}></span> : 'Зареєструватися'}
       </button>
+      <p className={styles.text}>
+        Вже маєте акаунт?{' '}
+        <Link to="/login" className={styles.link}>
+          Увійти
+        </Link>
+      </p>
     </form>
   );
 };
