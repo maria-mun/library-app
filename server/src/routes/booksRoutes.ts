@@ -13,25 +13,51 @@ router.get('/', async (req: Request, res: Response) => {
     author,
     search,
     firebaseUid,
+    list, // новий параметр
   } = req.query;
 
   try {
     const filter: any = {};
+    let user: any = null;
+    let userBookIds: string[] = [];
+
+    // Якщо є користувач
+    if (firebaseUid) {
+      user = await User.findOne({ firebaseUid });
+
+      if (!user) {
+        res.status(404).json({ error: 'Користувач не знайдений' });
+        return;
+      }
+
+      if (list && typeof list === 'string') {
+        const ids = getUserBookIdsFromList(user, list);
+
+        if (!ids) {
+          res.status(400).json({ error: 'Невалідний список' });
+          return;
+        }
+
+        userBookIds = ids;
+        filter._id = { $in: userBookIds };
+      }
+    }
+
+    // Додаємо фільтр по автору якщо є
     if (author) filter.author = author;
+
+    // Пошук по назві
     if (search) {
       const searchRegex = new RegExp(search as string, 'i');
       filter.$or = [{ title: searchRegex }];
     }
 
+    // Тепер шукаємо книги
     const books = await Book.find(filter)
       .populate('author', '_id name country')
       .sort({ [sort as string]: order === 'asc' ? 1 : -1 });
 
-    let user: any = null;
-    if (firebaseUid) {
-      user = await User.findOne({ firebaseUid });
-    }
-
+    // Додаємо дані користувача до книг
     const booksWithUserData = books.map((book) => {
       if (!user) return book;
 
@@ -131,3 +157,29 @@ router.delete('/:id', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+function getUserBookIdsFromList(user: any, list: string): string[] | null {
+  const validLists = [
+    'readBooks',
+    'currentlyReadingBooks',
+    'plannedBooks',
+    'abandonedBooks',
+  ];
+
+  if (list === 'allLists') {
+    const allBookIds = [
+      ...user.readBooks,
+      ...user.currentlyReadingBooks,
+      ...user.plannedBooks,
+      ...user.abandonedBooks,
+    ].map((entry: any) => entry.bookId.toString());
+
+    return [...new Set(allBookIds)];
+  }
+
+  if (!validLists.includes(list)) {
+    return null;
+  }
+
+  return user[list].map((entry: any) => entry.bookId.toString());
+}

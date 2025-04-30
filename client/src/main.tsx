@@ -15,6 +15,7 @@ import AuthorDetail from './pages/AuthorDetail/AuthorDetail';
 import './main.css';
 import RegisterForm from './pages/RegisterForm/RegisterForm';
 import LoginForm from './pages/LoginForm/LoginForm';
+import MyLists from './pages/MyLists/MyLists';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: '/author/:id',
         element: <AuthorDetail />,
+      },
+      {
+        path: '/myLists',
+        element: <MyLists />,
       },
     ],
   },

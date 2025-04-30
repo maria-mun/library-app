@@ -1,12 +1,13 @@
-import styles from './all-books.module.css';
+import styles from './my-lists.module.css';
 import { useState, useEffect } from 'react';
 import BookList from '../../components/BookList/BookList';
 
-function AllBooksPage() {
+function MyLists() {
   const [sort, setSort] = useState<string | undefined>(undefined);
   const [order, setOrder] = useState<string | undefined>(undefined);
   const [searchValue, setSearchValue] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const [activeList, setActiveList] = useState<string>('allLists');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -29,7 +30,20 @@ function AllBooksPage() {
   return (
     <div className={styles.container}>
       <div className={styles.navigation}>
-        <h2 className={styles.title}>Усі книги</h2>
+        <h2 className={styles.title}>Мої списки</h2>
+        <div className={styles.lists}>
+          {lists.map((list) => (
+            <button
+              key={list.key}
+              className={`${styles['list-btn']} ${styles[list.key]} ${
+                activeList === list.key ? styles.active : ''
+              }`}
+              onClick={() => setActiveList(list.key)}
+            >
+              {list.label}
+            </button>
+          ))}
+        </div>
         <div className={styles.filters}>
           <input
             className={styles.search}
@@ -55,9 +69,22 @@ function AllBooksPage() {
         </div>
       </div>
 
-      <BookList sort={sort} order={order} search={debouncedSearch} />
+      <BookList
+        sort={sort}
+        order={order}
+        search={debouncedSearch}
+        list={activeList}
+      />
     </div>
   );
 }
 
-export default AllBooksPage;
+export default MyLists;
+
+const lists = [
+  { key: 'allLists', label: 'Всі' },
+  { key: 'readBooks', label: 'Прочитано' },
+  { key: 'currentlyReadingBooks', label: 'Читаю' },
+  { key: 'plannedBooks', label: 'Планую' },
+  { key: 'abandonedBooks', label: 'Закинуто' },
+];

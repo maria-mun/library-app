@@ -28,9 +28,10 @@ type BooksProps = {
   sort?: string;
   order?: string;
   search?: string;
+  list?: string;
 };
 
-function BookList({ authorId, sort, order, search }: BooksProps) {
+function BookList({ authorId, sort, order, search, list }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,9 +43,11 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
   console.log('booklist render');
   useEffect(() => {
     if (!loadingUser) {
-      fetchBooks();
+      setTimeout(() => {
+        fetchBooks();
+      }, 3000);
     }
-  }, [authorId, sort, order, search, loadingUser]);
+  }, [authorId, sort, order, search, loadingUser, user, list]);
 
   const fetchBooks = async () => {
     setIsLoading(true);
@@ -66,6 +69,9 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
       }
       if (user) {
         params.append('firebaseUid', user.uid);
+      }
+      if (list) {
+        params.append('list', list);
       }
 
       if (params.toString()) {
@@ -89,7 +95,7 @@ function BookList({ authorId, sort, order, search }: BooksProps) {
   };
 
   if (isLoading) {
-    return <Loader dotSize={50} />;
+    return <Loader />;
   }
 
   if (search && books.length === 0) {

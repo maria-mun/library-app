@@ -95,13 +95,25 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
 
       {isOpen && (
         <div className={styles.dropdown}>
-          <NavLink to="/profile" className={styles['menu-option']}>
+          <NavLink
+            to="/profile"
+            className={styles['menu-option']}
+            onClick={() => setIsOpen(false)}
+          >
             Профіль
           </NavLink>
-          <NavLink to="/myRatings" className={styles['menu-option']}>
+          <NavLink
+            to="/myRatings"
+            className={styles['menu-option']}
+            onClick={() => setIsOpen(false)}
+          >
             Мої оцінки
           </NavLink>
-          <NavLink to="/myLists" className={styles['menu-option']}>
+          <NavLink
+            to="/myLists"
+            className={styles['menu-option']}
+            onClick={() => setIsOpen(false)}
+          >
             Мої списки
           </NavLink>
           <hr />

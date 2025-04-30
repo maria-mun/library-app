@@ -184,3 +184,35 @@
 .abandonedBooks.active {
   background-color: rgba(255, 47, 0, 0.2);
 }
+
+.link {
+  text-decoration: none;
+  color: var(--accent1);
+}
+
+.bookmarks {
+  position: absolute;
+  top: -4px;
+  left: 5px;
+  display: flex;
+  width: 80px;
+  z-index: 200;
+}
+
+.bookmark {
+  margin: 0 -5px;
+}
+
+.bookmark.readBooks {
+  color: rgb(40, 135, 31, 0.7);
+}
+
+.bookmark.currentlyReadingBooks {
+  color: rgb(211, 162, 0, 0.7);
+}
+.bookmark.plannedBooks {
+  color: rgb(26, 107, 169, 0.7);
+}
+.bookmark.abandonedBooks {
+  color: rgb(191, 6, 6, 0.7);
+}
