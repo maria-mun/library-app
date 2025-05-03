@@ -47,6 +47,14 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const author = await Author.findById(authorId);
     if (!author) {
       res.status(404).json({ message: 'Автора не знайдено' });
+      return;
+    }
+
+    if (author && author.books.length > 0) {
+      res
+        .status(400)
+        .json({ message: 'Не можна видалити автора, у якого є книги' });
+      return;
     }
 
     await Author.findByIdAndDelete(authorId);

@@ -1,7 +1,7 @@
 import styles from './booklist.module.css';
 import { useState, useEffect } from 'react';
 import BookCard from '../BookCard/BookCard';
-import DeleteBookModal from '../ModalDelete/ModalDelete';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
 import { useAuth } from '../../context/AuthContext';
 import { User } from 'firebase/auth';
@@ -43,9 +43,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
   console.log('booklist render');
   useEffect(() => {
     if (!loadingUser) {
-      setTimeout(() => {
-        fetchBooks();
-      }, 3000);
+      fetchBooks();
     }
   }, [authorId, sort, order, search, loadingUser, user, list]);
 
@@ -119,7 +117,8 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
         ))}
       </div>
       {modalBookId && (
-        <DeleteBookModal
+        <ConfirmModal
+          message="Ви впевнені, що хочете видалити цю книгу?"
           onClose={() => setModalBookId(null)}
           onConfirm={() => handleDelete(modalBookId)}
         />

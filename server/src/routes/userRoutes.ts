@@ -96,7 +96,7 @@ router.post('/:userId/rating', async (req: Request, res: Response) => {
     return;
   }
 });
-
+/* 
 router.get('/:userId/books/:list', async (req: Request, res: Response) => {
   const { userId, list } = req.params;
 
@@ -122,6 +122,6 @@ router.get('/:userId/books/:list', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Server error' });
     return;
   }
-});
+}); */
 
 export { router };

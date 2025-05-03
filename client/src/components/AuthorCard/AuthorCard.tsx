@@ -1,5 +1,6 @@
 import styles from './author-card.module.css';
 import { Link } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
 
 type Author = {
   _id: string;
@@ -21,9 +22,28 @@ type Book = {
 
 type AuthorCardProps = {
   author: Author;
+  onDelete: () => void;
 };
 
-const AuthorCard = ({ author }: AuthorCardProps) => {
+const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   return (
     <div className={styles.author}>
       <Link to={`/author/${author._id}`}>
@@ -39,8 +59,28 @@ const AuthorCard = ({ author }: AuthorCardProps) => {
         </h2>
         <p className={styles.country}>{author.country}</p>
       </div>
-      <div className={styles['options-cont']}>
-        <button className={styles['options-btn']}>⋮</button>
+      <div className={styles['options-cont']} ref={dropdownRef}>
+        <button
+          className={styles['options-btn']}
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          ⋮
+        </button>
+        {isOpen && (
+          <div className={styles.dropdown}>
+            <ul className={styles['options-list']}>
+              <li
+                className={styles.option}
+                onClick={() => {
+                  setIsOpen(false);
+                  onDelete();
+                }}
+              >
+                Видалити з бази даних
+              </li>
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

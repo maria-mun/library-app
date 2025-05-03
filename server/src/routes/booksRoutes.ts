@@ -142,13 +142,28 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   const bookId = req.params.id;
   try {
-    const deletedBook = await Book.findByIdAndDelete(bookId);
-
-    if (!deletedBook) {
-      res.status(404).json({ message: 'Книга не знайдена' });
+    const book = await Book.findById(bookId);
+    if (!book) {
+      res.status(404).json({ message: 'Книгу не знайдено' });
       return;
     }
+    await Author.findByIdAndUpdate(book.author, {
+      $pull: { books: book._id },
+    });
 
+    await User.updateMany(
+      {},
+      {
+        $pull: {
+          readBooks: { bookId },
+          plannedBooks: { bookId },
+          currentlyReadingBooks: { bookId },
+          abandonedBooks: { bookId },
+          ratedBooks: { bookId },
+        },
+      }
+    );
+    await Book.findByIdAndDelete(bookId);
     res.status(200).json({ message: 'Книга успішно видалена' });
   } catch (error) {
     console.error('Помилка при видаленні книги:', error);
