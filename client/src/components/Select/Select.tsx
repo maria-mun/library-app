@@ -24,7 +24,11 @@ const Select = ({ multiple, label, value, onChange, options }: SelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   function clearSelected() {
-    multiple ? onChange([]) : onChange(undefined);
+    if (multiple) {
+      onChange([]);
+    } else {
+      onChange(undefined);
+    }
   }
 
   function selectOption(option: SelectOption) {
@@ -44,17 +48,8 @@ const Select = ({ multiple, label, value, onChange, options }: SelectProps) => {
   }
 
   return (
-    <div
-      onBlur={() => {
-        setIsOpen(false);
-      }}
-      onClick={() => {
-        setIsOpen((prev) => !prev);
-      }}
-      tabIndex={0}
-      className={styles.container}
-    >
-      <span
+    <div>
+      <div
         className={`${styles.placeholder} ${
           !value || (Array.isArray(value) && value.length === 0)
             ? ''
@@ -63,56 +58,66 @@ const Select = ({ multiple, label, value, onChange, options }: SelectProps) => {
         `}
       >
         {label}
-      </span>
-
-      <span className={styles.value}>
-        {multiple
-          ? value.map((v) => (
-              <button
-                type="button"
-                key={v}
-                className={styles['option-badge']}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  selectOption(v);
-                }}
-              >
-                {v}
-                <span className={styles['remove-btn']}>&times;</span>
-              </button>
-            ))
-          : value}
-      </span>
-
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          clearSelected();
+      </div>
+      <div
+        onBlur={() => {
+          setIsOpen(false);
         }}
-        type="button"
-        className={styles['clear-btn']}
+        onClick={() => {
+          setIsOpen((prev) => !prev);
+        }}
+        tabIndex={0}
+        className={styles.container}
       >
-        &times;
-      </button>
-      <div className={styles.divider}></div>
-      <div className={styles.caret}></div>
-      <ul className={`${styles.options} ${isOpen ? styles.show : ''}`}>
-        {options.map((option) => (
-          <li
-            onClick={(e) => {
-              e.stopPropagation();
-              selectOption(option);
-              if (!multiple) setIsOpen(false);
-            }}
-            key={option}
-            className={`${styles.option} ${
-              isSelected(option) ? styles.selected : ''
-            }`}
-          >
-            {option}
-          </li>
-        ))}
-      </ul>
+        <span className={styles.value}>
+          {multiple
+            ? value.map((v) => (
+                <button
+                  type="button"
+                  key={v}
+                  className={styles['option-badge']}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectOption(v);
+                  }}
+                >
+                  {v}
+                  <span className={styles['remove-btn']}>&times;</span>
+                </button>
+              ))
+            : value}
+        </span>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            clearSelected();
+          }}
+          type="button"
+          className={styles['clear-btn']}
+        >
+          &times;
+        </button>
+        <div className={styles.divider}></div>
+        <div className={styles.caret}></div>
+        <ul className={`${styles.options} ${isOpen ? styles.show : ''}`}>
+          {options.map((option) => (
+            <li
+              onClick={(e) => {
+                e.stopPropagation();
+                selectOption(option);
+                if (!multiple) setIsOpen(false);
+              }}
+              key={option}
+              className={`${styles.option} ${
+                isSelected(option) ? styles.selected : ''
+              }`}
+            >
+              {option}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styles from './author-autocomplete-input.module.css';
 
 interface Author {
@@ -6,15 +6,22 @@ interface Author {
   name: string;
 }
 
-const AuthorAutocomplete = () => {
-  const [inputValue, setInputValue] = useState<string>('');
-  const [isDisabled, setIsDisabled] = useState<boolean>(false);
+interface Props {
+  value: Author | null;
+  onChange: (author: Author | null) => void;
+}
+
+const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
+  const [inputValue, setInputValue] = useState(value?.name || '');
   const [authors, setAuthors] = useState<Author[]>([]);
-  const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setInputValue(value?.name || '');
+  }, [value]);
 
   const fetchAuthors = async (query: string) => {
     if (!query) {
@@ -26,13 +33,11 @@ const AuthorAutocomplete = () => {
       const response = await fetch(
         `http://localhost:4000/api/authors?search=${query}`
       );
-      if (!response.ok) {
-        throw new Error('Помилка при отриманні авторів');
-      }
+      if (!response.ok) throw new Error('Помилка при отриманні авторів');
       const data = await response.json();
       setAuthors(data || []);
-    } catch (error) {
-      console.error('Помилка:', error);
+    } catch (err) {
+      console.error('Помилка:', err);
       setAuthors([]);
     } finally {
       setIsLoading(false);
@@ -42,12 +47,10 @@ const AuthorAutocomplete = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    /*  setSelectedAuthor(null); */
+    onChange(null); // обнуляємо вибраного автора
     setIsOpen(true);
 
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+    if (debounceRef.current) clearTimeout(debounceRef.current);
 
     debounceRef.current = setTimeout(() => {
       if (value.trim()) {
@@ -58,56 +61,48 @@ const AuthorAutocomplete = () => {
     }, 600);
   };
 
-  const handleAuthorSelect = (author: { _id: string; name: string }) => {
+  const handleAuthorSelect = (author: Author) => {
+    onChange(author);
     setInputValue(author.name);
-    setSelectedAuthor(author);
-    setIsDisabled(true);
     setIsOpen(false);
     setAuthors([]);
   };
 
-  const handleBlur = () => {
-    setIsOpen(false);
-  };
-
   const clearInput = () => {
-    setIsDisabled(false);
-    setSelectedAuthor(null);
+    onChange(null);
     setInputValue('');
   };
 
   return (
-    <div className={styles.container}>
-      <input
-        className={styles.input}
-        disabled={isDisabled}
-        type="text"
-        id="author"
-        placeholder="Автор"
-        required
-        aria-required="true"
-        value={inputValue}
-        onChange={handleInputChange}
-        onFocus={() => setIsOpen(true)}
-        autoComplete="off"
-        onBlur={handleBlur}
-      />
-      {isDisabled && (
-        <button
-          type="button"
-          onClick={clearInput}
-          className={styles['clear-btn']}
-          aria-label="Очистити поле"
-        >
-          &times;
-        </button>
-      )}
-      <label
-        htmlFor="author"
-        className={`${styles.label} ${isDisabled ? styles['has-value'] : ''}`}
-      >
+    <div className={styles['input-group']}>
+      <label htmlFor="author" className={styles.label}>
         Автор<span className="asterisk">*</span>
       </label>
+      <div className={styles['input-container']}>
+        <input
+          className={styles.input}
+          type="text"
+          id="author"
+          required
+          aria-required="true"
+          value={inputValue}
+          onChange={handleInputChange}
+          onFocus={() => setIsOpen(true)}
+          onBlur={() => setTimeout(() => setIsOpen(false), 150)}
+          autoComplete="off"
+          disabled={!!value}
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={clearInput}
+            className={styles['clear-btn']}
+            aria-label="Очистити поле"
+          >
+            &times;
+          </button>
+        )}
+      </div>
 
       <div className={`${styles.dropdown} ${isOpen ? styles.open : ''}`}>
         {!isLoading && authors.length > 0 && (
@@ -116,9 +111,7 @@ const AuthorAutocomplete = () => {
               <li
                 className={styles.option}
                 key={author._id}
-                onMouseDown={() => {
-                  handleAuthorSelect(author);
-                }}
+                onMouseDown={() => handleAuthorSelect(author)}
               >
                 {author.name}
               </li>
@@ -129,9 +122,8 @@ const AuthorAutocomplete = () => {
         {!isLoading && authors.length === 0 && inputValue !== '' && (
           <p>Нічого не знайдено</p>
         )}
-
         {!isLoading && authors.length === 0 && inputValue === '' && (
-          <p>Почніть вводити прізвище і виберіть з існуючих авторів.</p>
+          <p>Почніть вводити ім’я і виберіть зі списку</p>
         )}
         {isLoading && <p>Завантаження...</p>}
       </div>
@@ -139,7 +131,7 @@ const AuthorAutocomplete = () => {
       <input
         type="hidden"
         name="author"
-        value={selectedAuthor?._id}
+        value={value?._id || ''}
         required
         aria-required="true"
       />
@@ -147,4 +139,4 @@ const AuthorAutocomplete = () => {
   );
 };
 
-export default AuthorAutocomplete;
+export default AuthorAutocompleteInput;

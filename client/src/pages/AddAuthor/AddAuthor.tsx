@@ -1,114 +1,134 @@
-import { Form, useActionData, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import styles from './add-author.module.css';
-
-export const action = async ({ request }: { request: Request }) => {
-  const formData = await request.formData();
-  const authorData = Object.fromEntries(formData);
-
-  try {
-    const response = await fetch('http://localhost:4000/api/authors', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(authorData),
-    });
-
-    if (!response.ok) {
-      throw new Error('Помилка при додаванні автора до бази даних');
-    }
-
-    const data = await response.json();
-    return { success: true, data };
-  } catch (error) {
-    console.error(error);
-    return {
-      success: false,
-      message: 'Помилка при додаванні автора до бази даних',
-    };
-  }
-};
-
-type ActionData = {
-  success: boolean;
-  message?: string;
-};
+import XIcon from '../../components/Icons/XIcon';
 
 const AddAuthorForm = () => {
-  const actionData = useActionData() as ActionData;
+  const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
 
+  const [name, setName] = useState('');
+  const [country, setCountry] = useState('');
+  const [description, setDescription] = useState('');
+  const [photo, setPhoto] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const authorData = {
+      name: name.trim(),
+      country,
+      description,
+      photo,
+    };
+
+    try {
+      const response = await fetch('http://localhost:4000/api/authors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(authorData),
+      });
+
+      if (!response.ok) throw new Error();
+
+      setSuccessMessage('Автора/-ку успішно додано!');
+      setTimeout(() => navigate('/'), 2000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (successMessage) {
+    return (
+      <div className={styles.successContainer}>
+        <h3>{successMessage}</h3>
+        <img
+          className={styles.successIcon}
+          width="80"
+          src="/success.svg"
+          alt=""
+        />
+      </div>
+    );
+  }
+
   return (
-    <Form id={styles['add-author-form']} method="post">
-      <button
-        className={styles['close-btn']}
-        onClick={() => {
-          navigate(-1);
-        }}
-      >
-        &otimes;
+    <form className={styles.form} onSubmit={handleSubmit}>
+      <button className={styles['close-btn']} onClick={() => navigate('/')}>
+        <XIcon size={30} />
       </button>
-      <h2>Заповніть дані про автора</h2>
+      <h2 className={styles.heading}>Заповніть дані про автора</h2>
       <p>
         Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
       </p>
-      <div>
+      <div className={styles['input-group']}>
+        <label htmlFor="name" className={styles.label}>
+          Ім'я автора<span className={styles.asterisk}>*</span>
+        </label>
         <input
+          autoComplete="off"
           className={styles.input}
           type="text"
           id={styles.name}
           name="name"
-          placeholder="Ім'я автора"
           required
-          aria-required="true"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
-        <label htmlFor="name" className={styles.label}>
-          Ім'я автора<span className={styles.asterisk}>*</span>
-        </label>
       </div>
-      <div>
+      <div className={styles['input-group']}>
+        <label htmlFor="country" className={styles.label}>
+          Країна
+        </label>
         <input
+          autoComplete="off"
           className={styles.input}
           type="text"
           id={styles.country}
           name="country"
-          placeholder="Країна"
+          value={country}
+          onChange={(e) => setCountry(e.target.value)}
         />
-        <label htmlFor="country" className={styles.label}>
-          Країна
-        </label>
       </div>
-      <div>
+      <div className={styles['input-group']}>
+        <label htmlFor="description" className={styles.label}>
+          Коротка інформація
+        </label>
         <input
+          autoComplete="off"
           className={styles.input}
           type="text"
           id={styles.description}
           name="description"
-          placeholder="Коротка інформація"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
-        <label htmlFor="author" className={styles.label}>
-          Коротка інформація
-        </label>
       </div>
-      <div>
+      <div className={styles['input-group']}>
+        <label htmlFor="photo" className={styles.label}>
+          Посилання на фото
+        </label>
         <input
+          autoComplete="off"
           className={styles.input}
           type="url"
           id={styles.photo}
           name="photo"
-          placeholder="Посилання на фото"
+          value={photo}
+          onChange={(e) => setPhoto(e.target.value)}
         />
-        <label htmlFor="photo" className={styles.label}>
-          Посилання на фото
-        </label>
       </div>
-      <button type="submit" id={styles['submit-btn']}>
-        Додати
+      <button
+        type="submit"
+        className={styles['submit-btn']}
+        disabled={!name.trim() || loading}
+      >
+        {loading ? <span className={styles.spinner}></span> : 'Додати'}
       </button>
-      {actionData?.success ? (
-        <p>Автора/-ку успішно додано!</p>
-      ) : (
-        actionData && <p>Помилка: {actionData.message}</p>
-      )}
-    </Form>
+    </form>
   );
 };
 
