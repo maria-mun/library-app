@@ -1,0 +1,126 @@
+.form {
+  position: relative;
+  margin: 4rem auto 6rem;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  gap: 0.5em;
+  width: 22em;
+  background-color: var(--bg1);
+  border-radius: 10px;
+  padding: 1em;
+}
+
+.heading {
+  color: var(--accent2);
+
+  margin-bottom: 0.5em;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.label {
+  color: var(--neutral);
+  font-size: 0.9rem;
+}
+
+.input {
+  padding: 0.5em;
+  border-radius: var(--border-radius);
+  background-color: var(--bg2);
+  border: none;
+  color: var(--accent1);
+  font-size: 1rem;
+  height: 2.5em;
+  outline: none;
+}
+
+.input::placeholder {
+  opacity: 0;
+}
+
+.input:focus + .label,
+.input:not(:placeholder-shown) + .label {
+  background-color: var(--bg1);
+  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
+}
+
+.input:focus,
+.input:focus-within {
+  outline: 2px solid var(--accent1);
+}
+
+.close-btn {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg2);
+  border: 1px solid grey;
+  cursor: pointer;
+  color: grey;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  color: var(--accent2);
+}
+
+.submit-btn {
+  background: rgb(187, 67, 44);
+  margin: 1em 0;
+  border: none;
+  border-radius: var(--border-radius);
+  color: rgb(255, 255, 255);
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-btn:hover {
+  background-color: rgb(219, 89, 28);
+  cursor: pointer;
+}
+
+.submit-btn:disabled,
+.submit-btn:disabled:hover {
+  background-color: var(--neutral);
+
+  color: white;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid #fff;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.successContainer {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2em;
+}

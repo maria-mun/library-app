@@ -1,9 +1,17 @@
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
-import styles from './add-author.module.css';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import styles from './edit-author-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
 
-const AddAuthorForm = () => {
+interface Author {
+  name: string;
+  country: string;
+  description: string;
+  photo: string;
+}
+
+const EditAuthorForm = () => {
+  const { authorId } = useParams<{ authorId: string }>();
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
@@ -12,6 +20,28 @@ const AddAuthorForm = () => {
   const [country, setCountry] = useState('');
   const [description, setDescription] = useState('');
   const [photo, setPhoto] = useState('');
+
+  useEffect(() => {
+    const fetchAuthor = async () => {
+      console.log(authorId);
+      try {
+        const res = await fetch(
+          `http://localhost:4000/api/authors/${authorId}`
+        );
+        if (!res.ok) throw new Error('Не вдалося отримати дані автора');
+        const data: Author = await res.json();
+        console.log('Fetched author data:', data);
+        setName(data.name);
+        setCountry(data.country || '');
+        setDescription(data.description || '');
+        setPhoto(data.photo || '');
+      } catch (err) {
+        console.error('Помилка при завантаженні автора:', err);
+      }
+    };
+
+    fetchAuthor();
+  }, [authorId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,15 +54,17 @@ const AddAuthorForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:4000/api/authors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authorData),
-      });
+      const response = await fetch(
+        `http://localhost:4000/api/authors/${authorId}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(authorData),
+        }
+      );
 
       if (!response.ok) throw new Error();
-
-      setSuccessMessage('Автора/-ку успішно додано!');
+      setSuccessMessage('Автора/-ку успішно оновлено!');
       setTimeout(() => navigate('/allAuthors'), 2000);
     } catch (err) {
       console.error(err);
@@ -64,7 +96,7 @@ const AddAuthorForm = () => {
       >
         <XIcon size={30} />
       </button>
-      <h2 className={styles.heading}>Заповніть дані про автора</h2>
+      <h2 className={styles.heading}>Редагувати дані про автора</h2>
       <p>
         Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
       </p>
@@ -130,10 +162,10 @@ const AddAuthorForm = () => {
         className={styles['submit-btn']}
         disabled={!name.trim() || loading}
       >
-        {loading ? <span className={styles.spinner}></span> : 'Додати'}
+        {loading ? <span className={styles.spinner}></span> : 'Оновити'}
       </button>
     </form>
   );
 };
 
-export default AddAuthorForm;
+export default EditAuthorForm;

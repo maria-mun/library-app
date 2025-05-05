@@ -1,6 +1,8 @@
 import styles from './author-card.module.css';
 import { Link } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
+import BinIcon from '../Icons/BinIcon';
+import EditIcon from '../Icons/EditIcon';
 
 type Author = {
   _id: string;
@@ -77,6 +79,16 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
                 }}
               >
                 Видалити з бази даних
+                <EditIcon size={35} />
+              </li>
+              <li className={styles.option}>
+                <Link
+                  to={`/editAuthorForm/${author._id}`}
+                  className={styles.link}
+                >
+                  Редагувати
+                </Link>
+                <BinIcon size={20} />
               </li>
             </ul>
           </div>

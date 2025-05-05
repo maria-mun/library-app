@@ -56,7 +56,7 @@ const LoginForm = () => {
 
       console.log('Успішний вхід:', userCredential.user.displayName);
 
-      navigate('/');
+      navigate(-1);
     } catch (err) {
       const error = err as { code: string };
       if (error.code === 'auth/invalid-credential') {
@@ -93,7 +93,11 @@ const LoginForm = () => {
 
   return (
     <form className={styles.form}>
-      <button className={styles['close-btn']} onClick={() => navigate('/')}>
+      <button
+        type="button"
+        className={styles['close-btn']}
+        onClick={() => navigate(-1)}
+      >
         <XIcon size={30} />
       </button>
       <h2 className={styles.title}>Вхід</h2>

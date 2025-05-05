@@ -14,6 +14,8 @@ import './main.css';
 import RegisterForm from './pages/RegisterForm/RegisterForm';
 import LoginForm from './pages/LoginForm/LoginForm';
 import MyLists from './pages/MyLists/MyLists';
+import EditBookForm from './pages/EditBook/EditBookForm';
+import EditAuthorForm from './pages/EditAuthor/EditAuthorForm';
 
 const router = createBrowserRouter([
   {
@@ -58,6 +60,14 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginForm />,
+  },
+  {
+    path: '/editBookForm/:bookId',
+    element: <EditBookForm />,
+  },
+  {
+    path: '/editAuthorForm/:authorId',
+    element: <EditAuthorForm />,
   },
 ]);
 

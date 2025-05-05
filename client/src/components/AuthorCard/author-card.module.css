@@ -122,3 +122,8 @@
 .option:hover {
   background-color: var(--bg2);
 }
+
+.link {
+  text-decoration: none;
+  color: var(--accent1);
+}

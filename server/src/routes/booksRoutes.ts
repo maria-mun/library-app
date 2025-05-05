@@ -128,7 +128,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.get('/:id', async (req: Request, res: Response) => {
   const bookId = req.params.id;
   try {
-    const book = await Book.findById(bookId);
+    const book = await Book.findById(bookId).populate('author');
     if (!book) {
       res.status(404).json({ message: 'Книга не знайдена' });
       return;
@@ -136,6 +136,28 @@ router.get('/:id', async (req: Request, res: Response) => {
     res.status(200).json(book);
   } catch (error) {
     res.status(500).json({ error: 'Помилка при отриманні книги' });
+  }
+});
+
+router.put('/:id', async (req: Request, res: Response) => {
+  try {
+    if (typeof req.body.genres === 'string') {
+      req.body.genres = JSON.parse(req.body.genres);
+    }
+
+    const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+
+    if (!updatedBook) {
+      res.status(404).json({ message: 'Книгу не знайдено' });
+      return;
+    }
+
+    res.status(200).json(updatedBook);
+  } catch (error) {
+    console.error('Помилка при оновленні книги:', error);
+    res.status(500).json({ message: 'Не вдалося оновити книгу', error });
   }
 });
 

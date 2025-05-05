@@ -31,6 +31,39 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
+router.put('/:id', async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { name, country, description, photo } = req.body;
+
+  if (!name?.trim()) {
+    res.status(400).json({ error: 'Поле "name" є обовʼязковим' });
+    return;
+  }
+
+  try {
+    const updated = await Author.findByIdAndUpdate(
+      id,
+      {
+        name: name.trim(),
+        country: country || '',
+        description: description || '',
+        photo: photo || '',
+      },
+      { new: true }
+    );
+
+    if (!updated) {
+      res.status(404).json({ error: 'Автор не знайдений' });
+      return;
+    }
+
+    res.status(200).json(updated);
+  } catch (err) {
+    console.error('Помилка при оновленні автора:', err);
+    res.status(500).json({ error: 'Щось пішло не так при оновленні автора' });
+  }
+});
+
 router.get('/:id', async (req: Request, res: Response) => {
   const authorId = req.params.id;
   try {

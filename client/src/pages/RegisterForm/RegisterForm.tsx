@@ -95,7 +95,7 @@ const RegisterForm = () => {
         throw new Error('Помилка при додаванні користувача до бази даних');
       }
       setSuccessMessage(`Користувач ${user.displayName} зареєстрований!`);
-      setTimeout(() => navigate('/'), 2000);
+      setTimeout(() => navigate('/allBooks'), 2000);
     } catch (err) {
       const error = err as { code: string };
       if (error.code === 'auth/email-already-in-use') {
@@ -129,7 +129,11 @@ const RegisterForm = () => {
 
   return (
     <form className={styles.form}>
-      <button className={styles['close-btn']} onClick={() => navigate('/')}>
+      <button
+        type="button"
+        className={styles['close-btn']}
+        onClick={() => navigate(-1)}
+      >
         <XIcon size={30} />
       </button>
 

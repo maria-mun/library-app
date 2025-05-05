@@ -3,6 +3,8 @@ import styles from './book-card.module.css';
 import { useState, useEffect, useRef } from 'react';
 import Spinner from '../Spinner/Spinner';
 import { User } from 'firebase/auth';
+import BinIcon from '../Icons/BinIcon';
+import EditIcon from '../Icons/EditIcon';
 
 type Author = {
   _id: string;
@@ -187,7 +189,7 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
                   );
                 }
               })}
-
+              <hr />
               <li
                 className={styles.option}
                 onClick={() => {
@@ -196,6 +198,13 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
                 }}
               >
                 Видалити з бази даних
+                <EditIcon size={35} />
+              </li>
+              <li className={styles.option}>
+                <Link to={`/editBookForm/${book._id}`} className={styles.link}>
+                  Редагувати
+                </Link>
+                <BinIcon size={20} />
               </li>
             </ul>
           </div>
