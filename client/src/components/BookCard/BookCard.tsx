@@ -5,6 +5,7 @@ import Spinner from '../Spinner/Spinner';
 import { User } from 'firebase/auth';
 import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
+import Rating from '../Rating/Rating';
 
 type Author = {
   _id: string;
@@ -30,7 +31,7 @@ type Book = {
 };
 
 type BookCardProps = {
-  user: User;
+  user: User | null;
   book: Book;
   onDelete: () => void;
 };
@@ -137,9 +138,12 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
         </p>
         <span className={styles.country}>{book.author.country}</span>
         <span className={styles.year}>{book.year}</span>
-        <div className={styles.rating}>
-          <span>⭐ {book.rating}</span>
-        </div>
+
+        <Rating
+          userId={user ? user.uid : null}
+          bookId={book._id}
+          currentRating={book.userData?.rating || null}
+        />
         <div className={styles.genres}>
           {book.genres?.map((genre, index) => (
             <span key={index}>{genre}</span>
@@ -198,13 +202,13 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
                 }}
               >
                 Видалити з бази даних
-                <EditIcon size={35} />
+                <BinIcon size={35} />
               </li>
               <li className={styles.option}>
                 <Link to={`/editBookForm/${book._id}`} className={styles.link}>
                   Редагувати
                 </Link>
-                <BinIcon size={20} />
+                <EditIcon size={20} />
               </li>
             </ul>
           </div>
@@ -229,7 +233,10 @@ function BookMarks({ activeLists }: { activeLists: string[] }) {
       {lists.map((list) => {
         if (activeLists.includes(list.key)) {
           return (
-            <div className={`${styles[list.key]} ${styles.bookmark}`}>
+            <div
+              key={list.key}
+              className={`${styles[list.key]} ${styles.bookmark}`}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 x="0px"

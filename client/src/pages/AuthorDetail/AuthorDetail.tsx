@@ -25,6 +25,15 @@ const AuthorDetail = () => {
   const [author, setAuthor] = useState<Author | null>(null);
   const { id } = useParams<{ id: string }>();
 
+  const [sort, setSort] = useState<string | undefined>(undefined);
+  const [order, setOrder] = useState<string | undefined>(undefined);
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const [newSort, newOrder] = e.target.value.split('_');
+    setSort(newSort);
+    setOrder(newOrder);
+  };
+
   useEffect(() => {
     const fetchAuthor = async () => {
       try {
@@ -57,8 +66,22 @@ const AuthorDetail = () => {
           <p className={styles.country}>{author.country}</p>
           <p className={styles.description}>{author.description}</p>
         </div>
+        <div>
+          <span>Сортувати:</span>
+          <select
+            onChange={handleSortChange}
+            defaultValue=""
+            className={styles.sort}
+          >
+            <option value="">- -</option>
+            <option value="title_asc">за назвою (А-Я)</option>
+            <option value="title_desc">за назвою (Я-А)</option>
+            <option value="year_asc">за роком (зростання)</option>
+            <option value="year_desc">за роком (спадання)</option>
+          </select>
+        </div>
       </div>
-      <BookList authorId={id} />
+      <BookList sort={sort} order={order} authorId={id} />
     </>
   );
 };

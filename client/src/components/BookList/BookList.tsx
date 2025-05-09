@@ -36,7 +36,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user, loadingUser } = useAuth() as {
-    user: User;
+    user: User | null;
     loadingUser: boolean;
   };
 

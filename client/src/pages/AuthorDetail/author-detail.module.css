@@ -1,10 +1,9 @@
 .author {
-  background-color: var(--bg1);
-  border-radius: var(--border-radius);
+  background-color: var(--bg2);
+
   padding: 0.8rem;
   width: clamp(380px, 100%, 800px);
-  /*  display: flex; */
-  border: 1px solid rgb(47, 47, 47);
+  margin: 0 auto;
 }
 
 .photo {
@@ -78,5 +77,14 @@
 
 .options-btn:hover {
   background-color: var(--bg2);
+  color: var(--accent1);
+}
+
+.sort {
+  margin-left: 0.5rem;
+  background-color: var(--bg2);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--accent1);
   color: var(--accent1);
 }
