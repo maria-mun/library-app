@@ -26,16 +26,6 @@ export default function Header() {
       <NavLink to="/allAuthors" className={styles.link}>
         Автори
       </NavLink>
-      {user && (
-        <>
-          <NavLink to="/addBookForm" className={styles.link}>
-            Додати книгу
-          </NavLink>
-          <NavLink to="/addAuthorForm" className={styles.link}>
-            Додати автора
-          </NavLink>
-        </>
-      )}
 
       {user ? (
         <ProfileMenu user={user} logoutUser={logoutUser} />
@@ -62,8 +52,6 @@ export default function Header() {
 function ProfileMenu({ user, logoutUser }: ProfileProps) {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
-  console.log('user', user);
 
   const handleLogout = async () => {
     logoutUser();
@@ -111,13 +99,7 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
           >
             Профіль
           </NavLink>
-          <NavLink
-            to="/myRatings"
-            className={styles['menu-option']}
-            onClick={() => setIsOpen(false)}
-          >
-            Мої оцінки
-          </NavLink>
+
           <NavLink
             to="/myLists"
             className={styles['menu-option']}
@@ -133,6 +115,22 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
             <LogoutIcon />
             Вийти
           </button>
+          <hr />
+
+          <NavLink
+            to="/addBookForm"
+            className={styles['menu-option']}
+            onClick={() => setIsOpen(false)}
+          >
+            Додати книгу до бази даних
+          </NavLink>
+          <NavLink
+            to="/addAuthorForm"
+            className={styles['menu-option']}
+            onClick={() => setIsOpen(false)}
+          >
+            Додати автора до бази даних
+          </NavLink>
         </div>
       )}
     </div>

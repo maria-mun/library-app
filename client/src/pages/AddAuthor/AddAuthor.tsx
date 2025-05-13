@@ -1,12 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import styles from './add-author.module.css';
 import XIcon from '../../components/Icons/XIcon';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const AddAuthorForm = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const { getFreshToken } = useAuth();
 
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
@@ -24,9 +27,13 @@ const AddAuthorForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:4000/api/authors', {
+      const token = await getFreshToken();
+      const response = await fetch(`${API_URL}/authors/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(authorData),
       });
 

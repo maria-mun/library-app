@@ -5,6 +5,8 @@ import Select from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
 import { SelectOption } from '../../components/Select/Select';
 import XIcon from '../../components/Icons/XIcon';
+const API_URL = import.meta.env.VITE_API_URL;
+import { useAuth } from '../../context/AuthContext';
 
 interface Author {
   _id: string;
@@ -32,6 +34,7 @@ const allGenres = [
 ];
 
 const EditBookForm = () => {
+  const { getFreshToken } = useAuth();
   const { bookId } = useParams<{ bookId: string }>();
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -46,7 +49,7 @@ const EditBookForm = () => {
   useEffect(() => {
     const fetchBook = async () => {
       try {
-        const res = await fetch(`http://localhost:4000/api/books/${bookId}`);
+        const res = await fetch(`${API_URL}/books/public/${bookId}`);
         if (!res.ok) throw new Error('Не вдалося отримати книгу');
         const data: Book = await res.json();
         setTitle(data.title);
@@ -75,9 +78,13 @@ const EditBookForm = () => {
     };
 
     try {
-      const res = await fetch(`http://localhost:4000/api/books/${bookId}`, {
+      const token = await getFreshToken();
+      const res = await fetch(`${API_URL}/books/edit/${bookId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(bookData),
       });
 

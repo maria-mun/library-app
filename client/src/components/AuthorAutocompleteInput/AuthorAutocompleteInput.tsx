@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import styles from './author-autocomplete-input.module.css';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Author {
   _id: string;
@@ -30,9 +31,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
     }
     setIsLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/authors?search=${query}`
-      );
+      const response = await fetch(`${API_URL}/authors?search=${query}`);
       if (!response.ok) throw new Error('Помилка при отриманні авторів');
       const data = await response.json();
       setAuthors(data || []);

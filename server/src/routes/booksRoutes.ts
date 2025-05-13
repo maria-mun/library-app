@@ -1,27 +1,50 @@
 import express from 'express';
+import { body, validationResult } from 'express-validator';
 import { Book } from '../models/Book';
 import { Author } from '../models/Author';
 import { User } from '../models/User';
 import { Request, Response } from 'express';
+import { verifyToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
-router.get('/', async (req: Request, res: Response) => {
-  const {
-    sort = 'title',
-    order = 'asc',
-    author,
-    search,
-    firebaseUid,
-    list, // новий параметр
-  } = req.query;
+//валідувати і санітизувати пошук
+router.get('/public', async (req: Request, res: Response) => {
+  const { sort = 'title', order = 'asc', author, search } = req.query;
+
+  try {
+    const filter: any = {};
+
+    if (author) filter.author = author;
+
+    if (search) {
+      const searchRegex = new RegExp(search as string, 'i');
+      filter.$or = [{ title: searchRegex }];
+    }
+
+    const books = await Book.find(filter)
+      .populate('author', '_id name country')
+      .sort({ [sort as string]: order === 'asc' ? 1 : -1 });
+
+    res.json(books);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: 'Щось пішло не так при отриманні книг. Спробуйте ще раз.',
+    });
+  }
+});
+
+//валідувати і санітизувати пошук
+router.get('/authorized', verifyToken, async (req: Request, res: Response) => {
+  const firebaseUid = req.user?.uid;
+  const { sort = 'title', order = 'asc', author, search, list } = req.query;
 
   try {
     const filter: any = {};
     let user: any = null;
     let userBookIds: string[] = [];
 
-    // Якщо є користувач
     if (firebaseUid) {
       user = await User.findOne({ firebaseUid });
 
@@ -100,15 +123,74 @@ router.get('/', async (req: Request, res: Response) => {
     res.json(booksWithUserData);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Помилка при отриманні книг' });
+    res.status(500).json({
+      error: 'Щось пішло не так при отриманні книг. Спробуйте ще раз.',
+    });
   }
 });
 
-router.post('/', async (req: Request, res: Response) => {
+router.get('/public/:id', async (req: Request, res: Response) => {
+  const bookId = req.params.id;
   try {
-    if (typeof req.body.genres === 'string') {
-      req.body.genres = JSON.parse(req.body.genres);
+    const book = await Book.findById(bookId).populate('author');
+    if (!book) {
+      res.status(404).json({ message: 'Книга не знайдена' });
+      return;
     }
+    res.status(200).json(book);
+  } catch (error) {
+    res.status(500).json({
+      error: 'Щось пішло не так при отриманні книги. Спробуйте ще раз.',
+    });
+  }
+});
+
+//get book user з оцінками і списками користувача !!! коли буду робити сторінку книги
+router.get(
+  'authorized/:id',
+  verifyToken,
+  async (req: Request, res: Response) => {
+    const firebaseUid = req.user?.uid;
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      res
+        .status(403)
+        .json({ message: 'Заборонено: тільки для зареєстрованих' });
+      return;
+    }
+
+    const bookId = req.params.id;
+    try {
+      const book = await Book.findById(bookId).populate('author');
+      if (!book) {
+        res.status(404).json({ message: 'Книга не знайдена' });
+        return;
+      }
+      res.status(200).json(book);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Щось пішло не так при отриманні книги. Спробуйте ще раз.',
+      });
+    }
+  }
+);
+
+//валідувати і санітизувати
+router.post('/add', verifyToken, async (req: Request, res: Response) => {
+  const firebaseUid = req.user?.uid;
+  const user = await User.findOne({ firebaseUid });
+  if (!user) {
+    res.status(403).json({
+      message: 'Заборонено: тільки для зареєстрованих користувачів',
+    });
+    return;
+  }
+
+  if (typeof req.body.genres === 'string') {
+    req.body.genres = JSON.parse(req.body.genres);
+  }
+
+  try {
     const newBook = new Book(req.body);
     const createdBook = await newBook.save();
 
@@ -121,25 +203,23 @@ router.post('/', async (req: Request, res: Response) => {
     res.status(200).json(createdBook);
   } catch (error) {
     console.error('Помилка при додаванні книги:', error);
-    res.status(500).json({ message: 'Не вдалося додати книгу', error });
+    res.status(500).json({
+      message: 'Щось пішло не так при додаванні книги. Спробуйте ще раз.',
+      error,
+    });
   }
 });
 
-router.get('/:id', async (req: Request, res: Response) => {
-  const bookId = req.params.id;
-  try {
-    const book = await Book.findById(bookId).populate('author');
-    if (!book) {
-      res.status(404).json({ message: 'Книга не знайдена' });
-      return;
-    }
-    res.status(200).json(book);
-  } catch (error) {
-    res.status(500).json({ error: 'Помилка при отриманні книги' });
+//валідувати і санітизувати
+router.put('/edit/:id', verifyToken, async (req: Request, res: Response) => {
+  const firebaseUid = req.user?.uid;
+  const user = await User.findOne({ firebaseUid });
+  if (!user) {
+    res
+      .status(403)
+      .json({ message: 'Заборонено: тільки для зареєстрованих користувачів' });
+    return;
   }
-});
-
-router.put('/:id', async (req: Request, res: Response) => {
   try {
     if (typeof req.body.genres === 'string') {
       req.body.genres = JSON.parse(req.body.genres);
@@ -157,41 +237,57 @@ router.put('/:id', async (req: Request, res: Response) => {
     res.status(200).json(updatedBook);
   } catch (error) {
     console.error('Помилка при оновленні книги:', error);
-    res.status(500).json({ message: 'Не вдалося оновити книгу', error });
+    res.status(500).json({
+      message: 'Щось пішло не так при оновленні книги. Спробуйте ще раз.',
+    });
   }
 });
 
-router.delete('/:id', async (req: Request, res: Response) => {
-  const bookId = req.params.id;
-  try {
-    const book = await Book.findById(bookId);
-    if (!book) {
-      res.status(404).json({ message: 'Книгу не знайдено' });
+router.delete(
+  '/delete/:id',
+  verifyToken,
+  async (req: Request, res: Response) => {
+    const firebaseUid = req.user?.uid;
+    const user = await User.findOne({ firebaseUid });
+    if (!user || user.role !== 'admin') {
+      res.status(403).json({ message: 'Заборонено: тільки для адмінів' });
       return;
     }
-    await Author.findByIdAndUpdate(book.author, {
-      $pull: { books: book._id },
-    });
 
-    await User.updateMany(
-      {},
-      {
-        $pull: {
-          readBooks: { bookId },
-          plannedBooks: { bookId },
-          currentlyReadingBooks: { bookId },
-          abandonedBooks: { bookId },
-          ratedBooks: { bookId },
-        },
+    const bookId = req.params.id;
+
+    try {
+      const book = await Book.findById(bookId);
+      if (!book) {
+        res.status(404).json({ message: 'Книгу не знайдено.' });
+        return;
       }
-    );
-    await Book.findByIdAndDelete(bookId);
-    res.status(200).json({ message: 'Книга успішно видалена' });
-  } catch (error) {
-    console.error('Помилка при видаленні книги:', error);
-    res.status(500).json({ message: 'Виникла помилка на сервері' });
+      await Author.findByIdAndUpdate(book.author, {
+        $pull: { books: book._id },
+      });
+
+      await User.updateMany(
+        {},
+        {
+          $pull: {
+            readBooks: { bookId },
+            plannedBooks: { bookId },
+            currentlyReadingBooks: { bookId },
+            abandonedBooks: { bookId },
+            ratedBooks: { bookId },
+          },
+        }
+      );
+      await Book.findByIdAndDelete(bookId);
+      res.status(200).json({ message: 'Книгу успішно видалено.' });
+    } catch (error) {
+      console.error('Помилка при видаленні книги:', error);
+      res.status(500).json({
+        message: 'Щось пішло не так при видаленні книги. Спробуйте ще раз.',
+      });
+    }
   }
-});
+);
 
 export default router;
 

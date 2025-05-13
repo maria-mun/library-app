@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import styles from './edit-author-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
+const API_URL = import.meta.env.VITE_API_URL;
 
 interface Author {
   name: string;
@@ -15,6 +17,7 @@ const EditAuthorForm = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const { getFreshToken } = useAuth();
 
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
@@ -25,12 +28,10 @@ const EditAuthorForm = () => {
     const fetchAuthor = async () => {
       console.log(authorId);
       try {
-        const res = await fetch(
-          `http://localhost:4000/api/authors/${authorId}`
-        );
+        const res = await fetch(`${API_URL}/authors/${authorId}`);
         if (!res.ok) throw new Error('Не вдалося отримати дані автора');
         const data: Author = await res.json();
-        console.log('Fetched author data:', data);
+
         setName(data.name);
         setCountry(data.country || '');
         setDescription(data.description || '');
@@ -54,14 +55,15 @@ const EditAuthorForm = () => {
     };
 
     try {
-      const response = await fetch(
-        `http://localhost:4000/api/authors/${authorId}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(authorData),
-        }
-      );
+      const token = await getFreshToken();
+      const response = await fetch(`${API_URL}/authors/edit/${authorId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(authorData),
+      });
 
       if (!response.ok) throw new Error();
       setSuccessMessage('Автора/-ку успішно оновлено!');

@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+const API_URL = import.meta.env.VITE_API_URL;
 import styles from './book-card.module.css';
 import { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import Spinner from '../Spinner/Spinner';
 import { User } from 'firebase/auth';
 import BinIcon from '../Icons/BinIcon';
@@ -42,7 +44,7 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
     book.userData?.lists || []
   );
   const [loadingListKey, setLoadingListKey] = useState<string | null>(null);
-
+  const { getFreshToken, role } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -55,18 +57,13 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
-  const handleToggleBookStatus = async (
-    uid: string,
-    list: string,
-    bookId: string
-  ) => {
-    if (!uid || loadingListKey) return; // блокуємо повторні кліки
+  const handleToggleBookStatus = async (list: string, bookId: string) => {
+    if (loadingListKey) return;
     setLoadingListKey(list);
 
     // optimistic update
@@ -77,23 +74,22 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
     setActiveLists(newLists);
 
     try {
-      //симуляція заьримки
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      const response = await fetch(
-        `http://localhost:4000/api/users/${uid}/books/${list}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ bookId }),
-        }
-      );
+      const token = await getFreshToken();
+      if (!token) throw new Error('No token available');
+
+      const response = await fetch(`${API_URL}/users/books/${list}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ bookId }),
+      });
 
       if (!response.ok) throw new Error('Request failed');
 
       const data = await response.json();
-      const status = data.status; // 'added' або 'removed'
+      const status = data.status;
 
       // якщо сервер каже, що насправді не те зробилось — фіксимо
       if (
@@ -108,7 +104,7 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
       }
     } catch (err) {
       console.error(err);
-      // відкат, бо фейл
+
       setActiveLists(
         alreadyInList
           ? [...activeLists, list]
@@ -140,7 +136,6 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
         <span className={styles.year}>{book.year}</span>
 
         <Rating
-          userId={user ? user.uid : null}
           bookId={book._id}
           currentRating={book.userData?.rating || null}
         />
@@ -172,7 +167,7 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
                       }`}
                       onClick={() =>
                         !loadingListKey &&
-                        handleToggleBookStatus(user.uid, item.key, book._id)
+                        handleToggleBookStatus(item.key, book._id)
                       }
                       style={{
                         cursor: loadingListKey ? 'not-allowed' : 'pointer',
@@ -194,22 +189,29 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
                 }
               })}
               <hr />
-              <li
-                className={styles.option}
-                onClick={() => {
-                  setIsOpen(false);
-                  onDelete();
-                }}
-              >
-                Видалити з бази даних
-                <BinIcon size={35} />
-              </li>
-              <li className={styles.option}>
-                <Link to={`/editBookForm/${book._id}`} className={styles.link}>
-                  Редагувати
-                </Link>
-                <EditIcon size={20} />
-              </li>
+              {role === 'admin' && (
+                <li
+                  className={styles.option}
+                  onClick={() => {
+                    setIsOpen(false);
+                    onDelete();
+                  }}
+                >
+                  Видалити з бази даних
+                  <BinIcon size={35} />
+                </li>
+              )}
+              {(role === 'admin' || role === 'user') && (
+                <li className={styles.option}>
+                  <Link
+                    to={`/editBookForm/${book._id}`}
+                    className={styles.link}
+                  >
+                    Редагувати
+                  </Link>
+                  <EditIcon size={20} />
+                </li>
+              )}
             </ul>
           </div>
         )}

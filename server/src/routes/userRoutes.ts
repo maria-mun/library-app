@@ -1,6 +1,6 @@
 import { User } from '../models/User';
-
 import express, { Request, Response } from 'express';
+import { verifyToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -11,89 +11,101 @@ const allowedLists = [
   'abandonedBooks',
 ];
 
-router.post('/:userId/books/:list', async (req: Request, res: Response) => {
-  const { userId, list } = req.params;
-  const { bookId } = req.body;
+router.post(
+  '/books/:list',
+  verifyToken,
+  async (req: Request, res: Response) => {
+    const firebaseUid = req.user?.uid;
+    const { list } = req.params;
+    const { bookId } = req.body;
 
-  if (!allowedLists.includes(list)) {
-    res.status(400).json({ error: 'Invalid list type' });
-    return;
-  }
-
-  try {
-    const user = await User.findOne({ firebaseUid: userId });
-
-    if (!user) {
-      res.status(404).json({ error: 'User not found' });
+    if (!allowedLists.includes(list)) {
+      res.status(400).json({ error: 'Invalid list type' });
       return;
     }
 
-    const listData = user[list as keyof typeof user] as { bookId: string }[];
-    const isInList = listData.some((item) => item.bookId.toString() === bookId);
+    try {
+      const user = await User.findOne({ firebaseUid: firebaseUid });
 
-    let updatedUser;
-    if (isInList) {
-      // Видаляємо
-      updatedUser = await User.findOneAndUpdate(
-        { firebaseUid: userId },
-        { $pull: { [list]: { bookId } } },
-        { new: true }
+      if (!user) {
+        res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      const listData = user[list as keyof typeof user] as { bookId: string }[];
+      const isInList = listData.some(
+        (item) => item.bookId.toString() === bookId
       );
-      res.json({ message: 'Book removed from list', user: updatedUser });
-      return;
-    } else {
-      // Додаємо
-      updatedUser = await User.findOneAndUpdate(
-        { firebaseUid: userId },
-        { $addToSet: { [list]: { bookId } } },
-        { new: true }
-      );
-      res.json({ message: 'Book added to list', user: updatedUser });
+
+      let updatedUser;
+      if (isInList) {
+        updatedUser = await User.findOneAndUpdate(
+          { firebaseUid: firebaseUid },
+          { $pull: { [list]: { bookId } } },
+          { new: true }
+        );
+        res.json({ message: 'Book removed from list', user: updatedUser });
+        return;
+      } else {
+        updatedUser = await User.findOneAndUpdate(
+          { firebaseUid: firebaseUid },
+          { $addToSet: { [list]: { bookId } } },
+          { new: true }
+        );
+        res.json({ message: 'Book added to list', user: updatedUser });
+        return;
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Server error' });
       return;
     }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-    return;
   }
-});
+);
 
-router.post('/:userId/rating', async (req: Request, res: Response) => {
-  const { userId } = req.params;
+router.post('/rating', verifyToken, async (req: Request, res: Response) => {
+  const firebaseUid = req.user?.uid;
   const { bookId, rating } = req.body;
 
-  if (!bookId || typeof rating !== 'number' || rating < 1 || rating > 10) {
+  if (
+    !bookId ||
+    (rating !== null &&
+      (typeof rating !== 'number' || rating < 1 || rating > 10))
+  ) {
     res.status(400).json({ error: 'Invalid bookId or rating' });
     return;
   }
 
   try {
-    const user = await User.findOne({ firebaseUid: userId });
+    const user = await User.findOne({ firebaseUid: firebaseUid });
 
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;
     }
 
-    const existing = user.ratedBooks.find(
+    const existingIndex = user.ratedBooks.findIndex(
       (entry) => entry.bookId.toString() === bookId
     );
 
-    if (existing) {
+    if (rating === null) {
+      // видалити оцінку
+      if (existingIndex !== -1) {
+        user.ratedBooks.splice(existingIndex, 1);
+      }
+    } else if (existingIndex !== -1) {
       // оновити рейтинг
-      existing.rating = rating;
+      user.ratedBooks[existingIndex].rating = rating;
     } else {
       // додати нову оцінку
       user.ratedBooks.push({ bookId, rating });
     }
 
     await user.save();
-    res.json({ message: 'Rating saved' });
-    return;
+    res.json({ message: 'Rating processed' });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
-    return;
   }
 });
 

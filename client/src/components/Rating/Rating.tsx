@@ -1,26 +1,26 @@
 import styles from './rating.module.css';
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
+const API_URL = import.meta.env.VITE_API_URL;
 
 type RatingProps = {
-  userId: string | null;
   bookId: string;
   currentRating: number | null;
 };
 
 type RatingModalProps = {
-  userId: string;
   bookId: string;
   currentRating: number | null;
   onClose: () => void;
   onUpdateRating: (rating: number | null) => void;
 };
 
-export default function Rating({ userId, bookId, currentRating }: RatingProps) {
+export default function Rating({ bookId, currentRating }: RatingProps) {
   const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
   const [rating, setRating] = useState<number | null>(currentRating);
-
+  const { user } = useAuth();
   const ratingContent = (
     <>
       <StarIcon filled={!!rating} />
@@ -30,7 +30,7 @@ export default function Rating({ userId, bookId, currentRating }: RatingProps) {
 
   return (
     <>
-      {userId ? (
+      {user ? (
         <div
           className={styles.rating}
           onClick={() => setIsRatingModalOpen(true)}
@@ -45,10 +45,9 @@ export default function Rating({ userId, bookId, currentRating }: RatingProps) {
         </div>
       )}
 
-      {isRatingModalOpen && userId && (
+      {isRatingModalOpen && user && (
         <RatingModal
           onClose={() => setIsRatingModalOpen(false)}
-          userId={userId}
           bookId={bookId}
           currentRating={rating || null}
           onUpdateRating={setRating}
@@ -59,7 +58,6 @@ export default function Rating({ userId, bookId, currentRating }: RatingProps) {
 }
 
 function RatingModal({
-  userId,
   bookId,
   currentRating,
   onClose,
@@ -68,17 +66,19 @@ function RatingModal({
   const [newRating, setNewRating] = useState<number | null>(
     currentRating || null
   );
-
+  const { getFreshToken } = useAuth();
   const handleUpdateRating = async (rating: number | null) => {
     try {
-      const res = await fetch(
-        `http://localhost:4000/api/users/${userId}/rating`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bookId, rating }),
-        }
-      );
+      const token = await getFreshToken();
+      const res = await fetch(`${API_URL}/users/rating`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+
+        body: JSON.stringify({ bookId, rating }),
+      });
 
       if (!res.ok) {
         const errorData = await res.json();

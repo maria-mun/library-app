@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import styles from './add-book-form.module.css';
 import Select from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
 import { SelectOption } from '../../components/Select/Select';
 import XIcon from '../../components/Icons/XIcon';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const allGenres = [
   'Фентезі',
@@ -26,6 +28,7 @@ const AddBookForm = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const { getFreshToken } = useAuth();
 
   const [genres, setGenres] = useState<SelectOption[]>([]);
   const [title, setTitle] = useState('');
@@ -46,9 +49,13 @@ const AddBookForm = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:4000/api/books', {
+      const token = await getFreshToken();
+      const response = await fetch(`${API_URL}/books/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(bookData),
       });
 

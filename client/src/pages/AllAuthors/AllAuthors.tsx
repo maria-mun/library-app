@@ -1,8 +1,10 @@
 import styles from './all-authors.module.css';
 import { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import AuthorCard from '../../components/AuthorCard/AuthorCard';
 import Loader from '../../components/Loader/Loader';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+const API_URL = import.meta.env.VITE_API_URL;
 
 type Author = {
   _id: string;
@@ -25,11 +27,12 @@ const AllAuthors = () => {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [modalAuthorId, setModalAuthorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { getFreshToken } = useAuth();
 
   const fetchAuthors = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/authors');
+      const response = await fetch(`${API_URL}/authors`);
       const data = await response.json();
       setAuthors(data);
     } catch (error) {
@@ -44,11 +47,20 @@ const AllAuthors = () => {
   }, []);
 
   const handleDelete = async (id: string) => {
-    await fetch(`http://localhost:4000/api/authors/${id}`, {
-      method: 'DELETE',
-    });
-    fetchAuthors();
-    setModalAuthorId(null);
+    try {
+      const token = await getFreshToken();
+      await fetch(`${API_URL}/authors/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchAuthors();
+      setModalAuthorId(null);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   if (isLoading) {

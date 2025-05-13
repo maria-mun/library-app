@@ -88,7 +88,7 @@ header > .link:hover {
   display: flex;
   flex-direction: column;
   gap: 0.5em;
-  width: 10em;
+  width: 12em;
   font-size: 1rem;
   color: var(--accent1);
   box-shadow: black 0px 0px 10px 0px;

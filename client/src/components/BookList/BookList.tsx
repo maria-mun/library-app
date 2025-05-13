@@ -4,7 +4,8 @@ import BookCard from '../BookCard/BookCard';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
 import { useAuth } from '../../context/AuthContext';
-import { User } from 'firebase/auth';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 type Author = {
   _id: string;
@@ -35,22 +36,19 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, loadingUser } = useAuth() as {
-    user: User | null;
-    loadingUser: boolean;
-  };
+  const { user, role, loadingUser, getFreshToken } = useAuth();
 
-  console.log('booklist render');
   useEffect(() => {
-    if (!loadingUser) {
+    if (!loadingUser || user) {
       fetchBooks();
     }
   }, [authorId, sort, order, search, loadingUser, user, list]);
 
   const fetchBooks = async () => {
     setIsLoading(true);
+
     try {
-      let url = 'http://localhost:4000/api/books';
+      let url = `${API_URL}/books/${user ? 'authorized' : 'public'}`;
       const params = new URLSearchParams();
 
       if (authorId) {
@@ -65,9 +63,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
       if (search) {
         params.append('search', search);
       }
-      if (user) {
-        params.append('firebaseUid', user.uid);
-      }
+
       if (list) {
         params.append('list', list);
       }
@@ -75,10 +71,23 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
       if (params.toString()) {
         url += `?${params.toString()}`;
       }
-      const response = await fetch(url);
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (user) {
+        const token = await getFreshToken();
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
       const data = await response.json();
+
       setBooks(data);
-      console.log('books fetched');
     } catch (error) {
       console.error('Помилка при отриманні книг:', error);
     } finally {
@@ -87,9 +96,20 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
   };
 
   const handleDelete = async (id: string) => {
-    await fetch(`http://localhost:4000/api/books/${id}`, { method: 'DELETE' });
-    fetchBooks();
-    setModalBookId(null);
+    try {
+      const token = await getFreshToken();
+      await fetch(`${API_URL}/books/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchBooks();
+      setModalBookId(null);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   if (isLoading) {
@@ -116,7 +136,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
           />
         ))}
       </div>
-      {modalBookId && (
+      {modalBookId && role === 'admin' && (
         <ConfirmModal
           message="Ви впевнені, що хочете видалити цю книгу?"
           onClose={() => setModalBookId(null)}

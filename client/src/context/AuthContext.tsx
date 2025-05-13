@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { auth } from '../firebase/firebaseConfig.ts'; // Імпорт Firebase
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { onIdTokenChanged, signOut, User } from 'firebase/auth';
 import { loginUser, registerUser } from '../firebase/auth'; // Функції логіну та реєстрації
 
 // Типи для контексту
 interface AuthContextType {
   user: User | null;
+  role: string | null;
   loadingUser: boolean;
   loginUser: (email: string, password: string) => Promise<User | null>;
   registerUser: (
@@ -14,6 +15,7 @@ interface AuthContextType {
     name: string
   ) => Promise<User | null>;
   logoutUser: () => Promise<void>;
+  getFreshToken: () => Promise<string | null>;
 }
 
 // Створюємо контекст
@@ -23,26 +25,67 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [role, setRole] = useState<string | null>(null);
 
-  // Стежимо за зміною авторизації
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
+    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
+      setLoadingUser(true);
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        try {
+          await new Promise((res) => setTimeout(res, 1000));
+          const role = await fetchUserRole(firebaseUser);
+          setRole(role);
+        } catch (err) {
+          setRole(null);
+          console.error('Помилка при отриманні ролі:', err);
+        }
+      } else {
+        setUser(null);
+        setRole(null);
+      }
       setLoadingUser(false);
     });
-
-    return () => unsubscribe(); // Прибираємо підписку при розмонтуванні
+    return () => unsubscribe();
   }, []);
 
-  // Функція для виходу
+  const fetchUserRole = async (firebaseUser: User) => {
+    const token = await firebaseUser.getIdToken();
+    const res = await fetch('http://localhost:4000/api/auth/me', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error('Не вдалося отримати роль');
+    }
+    const data = await res.json();
+    return data.role;
+  };
+
   const logoutUser = async () => {
     await signOut(auth);
     setUser(null);
+    setRole(null);
+  };
+
+  const getFreshToken = async (): Promise<string | null> => {
+    if (!auth.currentUser) return null;
+    return await auth.currentUser.getIdToken();
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, loadingUser, loginUser, registerUser, logoutUser }}
+      value={{
+        user,
+        role,
+        loadingUser,
+        loginUser,
+        registerUser,
+        logoutUser,
+        getFreshToken,
+      }}
     >
       {children}
     </AuthContext.Provider>
