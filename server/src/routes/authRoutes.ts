@@ -1,7 +1,8 @@
 import { Request, Response, Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { User } from '../models/User';
-import { verifyToken } from '../middleware/authMiddleware';
+import { verifyToken, decodeTokenOnly } from '../middleware/authMiddleware';
+import { rateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -11,52 +12,66 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
     const user = await User.findOne({ firebaseUid });
 
     if (!user) {
-      res.status(404).json({ error: 'User not found' });
+      res
+        .status(404)
+        .json({ message: 'Користувача не знайдено у базі даних.' });
       return;
     }
 
     res.json({ user, role: user.role });
   } catch (err) {
-    res.status(500).json({ error: 'Something went wrong' });
+    res
+      .status(500)
+      .json({ message: 'Щось пішло не так на сервері. Спробуйте ще раз.' });
   }
 });
 
 router.post(
   '/register',
+  decodeTokenOnly,
   [
-    body('firebaseUid').isString().notEmpty().trim().escape(),
-    body('name').isString().isLength({ min: 2 }).trim().escape(),
-    body('email').isEmail().normalizeEmail(),
+    body('name')
+      .trim()
+      .escape()
+      .isLength({ min: 1, max: 20 })
+      .withMessage('Ім’я обовʼязкове і має бути до 20 символів'),
+    body('email').isEmail().withMessage('Некоректна email адреса'),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       res.status(400).json({ errors: errors.array() });
       return;
     }
 
-    const { firebaseUid, name, email } = req.body;
-
+    const firebaseUid = req.user?.uid;
+    const { name, email } = req.body;
     try {
-      const newUser = new User({ firebaseUid, name, email });
+      const newUser = new User({
+        firebaseUid: firebaseUid,
+        name,
+        email,
+      });
+
       await newUser.save();
+
       res.status(201).json({ message: 'Користувач створений', user: newUser });
     } catch (error) {
-      console.error('Помилка реєстрації:', error);
-      res.status(500).json({ message: 'Помилка сервера' });
+      res
+        .status(500)
+        .json({ message: 'Щось пішло не так на сервері. Спробуйте ще раз.' });
     }
   }
 );
 
-router.get(
+/* router.get(
   '/user-exists',
   [
     query('email')
       .trim()
       .normalizeEmail()
       .isEmail()
-      .withMessage('Невалідна email адреса'),
+      .withMessage('Некоректна email адреса'),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -75,6 +90,6 @@ router.get(
       res.status(500).json({ exists: false, message: 'Помилка сервера' });
     }
   }
-);
+); */
 
 export default router;

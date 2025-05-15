@@ -1,9 +1,10 @@
 import styles from './booklist.module.css';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BookCard from '../BookCard/BookCard';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -30,13 +31,22 @@ type BooksProps = {
   order?: string;
   search?: string;
   list?: string;
+  onError: (errorMessage: string) => void;
 };
 
-function BookList({ authorId, sort, order, search, list }: BooksProps) {
+function BookList({
+  authorId,
+  sort,
+  order,
+  search,
+  list,
+  onError,
+}: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user, role, loadingUser, getFreshToken } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loadingUser || user) {
@@ -87,9 +97,14 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
       });
       const data = await response.json();
 
+      if (!response.ok) {
+        onError(data.message);
+      }
+
       setBooks(data);
     } catch (error) {
-      console.error('Помилка при отриманні книг:', error);
+      console.error(error);
+      onError("Не вдалося зв'язатися з сервером. Спробуйте ще раз.");
     } finally {
       setIsLoading(false);
     }
@@ -98,17 +113,33 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
   const handleDelete = async (id: string) => {
     try {
       const token = await getFreshToken();
-      await fetch(`${API_URL}/books/delete/${id}`, {
+      const response = await fetch(`${API_URL}/books/delete/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       });
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
       fetchBooks();
       setModalBookId(null);
     } catch (err) {
       console.log(err);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
     }
   };
 

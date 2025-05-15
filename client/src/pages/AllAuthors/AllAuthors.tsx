@@ -1,6 +1,6 @@
 import styles from './all-authors.module.css';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import AuthorCard from '../../components/AuthorCard/AuthorCard';
 import Loader from '../../components/Loader/Loader';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';

@@ -7,9 +7,11 @@ function AllBooksPage() {
   const [order, setOrder] = useState<string | undefined>(undefined);
   const [searchValue, setSearchValue] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const [error, setError] = useState('');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
+    setError('');
   };
 
   useEffect(() => {
@@ -24,6 +26,7 @@ function AllBooksPage() {
     const [newSort, newOrder] = e.target.value.split('_');
     setSort(newSort);
     setOrder(newOrder);
+    setError('');
   };
 
   return (
@@ -37,6 +40,7 @@ function AllBooksPage() {
             placeholder="Пошук"
             value={searchValue}
             onChange={handleSearchChange}
+            maxLength={30}
           />
           <div>
             <span>Сортувати:</span>
@@ -53,9 +57,15 @@ function AllBooksPage() {
             </select>
           </div>
         </div>
+        {error && <p>{error}</p>}
       </div>
 
-      <BookList sort={sort} order={order} search={debouncedSearch} />
+      <BookList
+        onError={setError}
+        sort={sort}
+        order={order}
+        search={debouncedSearch}
+      />
     </div>
   );
 }

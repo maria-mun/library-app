@@ -6,7 +6,7 @@ import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/Au
 import { SelectOption } from '../../components/Select/Select';
 import XIcon from '../../components/Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 
 interface Author {
   _id: string;
@@ -22,15 +22,43 @@ interface Book {
 }
 
 const allGenres = [
-  'Фентезі',
-  'Пригоди',
+  'Антиутопія',
+  'Біографія / Мемуари',
+  'Бізнес / Економіка',
+  'Вестерн',
+  'Жахи',
+  'Графічний роман / Комікси',
+  'Гумор / Сатира',
   'Детектив',
+  'Дитяча література',
+  'Історія',
+  'Історична проза',
+  'Класика',
+  'Кримінальна проза',
+  'Кулінарія',
+  'Літературна проза',
+  'Магічний реалізм',
+  'Мистецтво / Культура',
+  'Міське фентезі',
+  'Міфи / Ретелінги (переосмислення міфів)',
+  'Наука / Популярна наука',
+  'Наукова фантастика',
+  'Освіта / Навчальні матеріали',
+  'Оповідання / Новели',
+  'Паранормальна проза',
+  'Подорожі',
+  'Політика / Суспільство',
+  'Пригоди',
+  'Релігія / Духовність',
   'Романтика',
-  'Історичне',
-  'Науково-популярне',
-  'Лірика',
-  'Для дітей',
-  'Для підлітків',
+  'Саморозвиток / Психологія',
+  'Сучасна проза',
+  'Темне фентезі',
+  'Трилер',
+  'Фентезі',
+  'Філософія',
+  'Шпигунський роман',
+  'Юнацька література',
 ];
 
 const EditBookForm = () => {
@@ -79,7 +107,7 @@ const EditBookForm = () => {
 
     try {
       const token = await getFreshToken();
-      const res = await fetch(`${API_URL}/books/edit/${bookId}`, {
+      const response = await fetch(`${API_URL}/books/edit/${bookId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -88,11 +116,26 @@ const EditBookForm = () => {
         body: JSON.stringify(bookData),
       });
 
-      if (!res.ok) throw new Error();
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
       setSuccessMessage('Книгу оновлено!');
       setTimeout(() => navigate(-1), 2000);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.log(error);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
     } finally {
       setLoading(false);
     }

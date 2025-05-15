@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../firebase/firebaseConfig.ts'; // Імпорт Firebase
+import { auth } from './firebase/firebaseConfig.ts';
 import { onIdTokenChanged, signOut, User } from 'firebase/auth';
-import { loginUser, registerUser } from '../firebase/auth'; // Функції логіну та реєстрації
+import { loginUser, registerUser } from './firebase/auth';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // Типи для контексту
 interface AuthContextType {
@@ -33,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (firebaseUser) {
         setUser(firebaseUser);
         try {
-          await new Promise((res) => setTimeout(res, 1000));
+          await new Promise((res) => setTimeout(res, 3000));
           const role = await fetchUserRole(firebaseUser);
           setRole(role);
         } catch (err) {
@@ -51,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserRole = async (firebaseUser: User) => {
     const token = await firebaseUser.getIdToken();
-    const res = await fetch('http://localhost:4000/api/auth/me', {
+    const res = await fetch(`${API_URL}/auth/me`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error('Не вдалося отримати роль');
     }
     const data = await res.json();
+    console.log('role', data.role);
     return data.role;
   };
 

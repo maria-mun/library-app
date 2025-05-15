@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import styles from './add-book-form.module.css';
 import Select from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
@@ -9,15 +9,43 @@ import XIcon from '../../components/Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const allGenres = [
-  'Фентезі',
-  'Пригоди',
+  'Антиутопія',
+  'Біографія / Мемуари',
+  'Бізнес / Економіка',
+  'Вестерн',
+  'Жахи',
+  'Графічний роман / Комікси',
+  'Гумор / Сатира',
   'Детектив',
+  'Дитяча література',
+  'Історія',
+  'Історична проза',
+  'Класика',
+  'Кримінальна проза',
+  'Кулінарія',
+  'Літературна проза',
+  'Магічний реалізм',
+  'Мистецтво / Культура',
+  'Міське фентезі',
+  'Міфи / Ретелінги (переосмислення міфів)',
+  'Наука / Популярна наука',
+  'Наукова фантастика',
+  'Освіта / Навчальні матеріали',
+  'Оповідання / Новели',
+  'Паранормальна проза',
+  'Подорожі',
+  'Політика / Суспільство',
+  'Пригоди',
+  'Релігія / Духовність',
   'Романтика',
-  'Історичне',
-  'Науково-популярне',
-  'Лірика',
-  'Для дітей',
-  'Для підлітків',
+  'Саморозвиток / Психологія',
+  'Сучасна проза',
+  'Темне фентезі',
+  'Трилер',
+  'Фентезі',
+  'Філософія',
+  'Шпигунський роман',
+  'Юнацька література',
 ];
 
 interface Author {
@@ -59,12 +87,27 @@ const AddBookForm = () => {
         body: JSON.stringify(bookData),
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
 
       setSuccessMessage('Книгу успішно додано!');
       setTimeout(() => navigate('/allBooks'), 2000);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.log(error);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
     } finally {
       setLoading(false);
     }
@@ -124,6 +167,7 @@ const AddBookForm = () => {
           name="year"
           placeholder="Рік виходу"
           value={year}
+          max={new Date().getFullYear()}
           onChange={(e) => setYear(e.target.value)}
         />
       </div>

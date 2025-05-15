@@ -1,8 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider } from './AuthContext';
 import Root from './pages/Root/Root';
+import ErrorPage from './pages/ErrorPage/ErrorPage';
 import AllBooks from './pages/AllBooks/AllBooks';
 import Home from './pages/Home/Home';
 import AddBookForm from './pages/AddBook/AddBook';
@@ -68,6 +69,10 @@ const router = createBrowserRouter([
   {
     path: '/editAuthorForm/:authorId',
     element: <EditAuthorForm />,
+  },
+  {
+    path: '/error',
+    element: <ErrorPage />,
   },
 ]);
 

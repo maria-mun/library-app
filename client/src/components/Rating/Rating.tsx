@@ -1,7 +1,7 @@
 import styles from './rating.module.css';
 import ReactDOM from 'react-dom';
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import { Link } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL;
 

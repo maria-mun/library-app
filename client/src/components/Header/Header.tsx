@@ -1,6 +1,6 @@
 import styles from './header.module.css';
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { User } from 'firebase/auth';
 

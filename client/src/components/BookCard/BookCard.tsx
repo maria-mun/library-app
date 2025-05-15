@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL;
 import styles from './book-card.module.css';
 import { useState, useEffect, useRef } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import Spinner from '../Spinner/Spinner';
 import { User } from 'firebase/auth';
 import BinIcon from '../Icons/BinIcon';
@@ -46,6 +46,7 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
   const [loadingListKey, setLoadingListKey] = useState<string | null>(null);
   const { getFreshToken, role } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -86,7 +87,16 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
         body: JSON.stringify({ bookId }),
       });
 
-      if (!response.ok) throw new Error('Request failed');
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
 
       const data = await response.json();
       const status = data.status;
@@ -110,6 +120,13 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
           ? [...activeLists, list]
           : activeLists.filter((l) => l !== list)
       );
+
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
     } finally {
       setLoadingListKey(null);
     }

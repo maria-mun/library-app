@@ -8,9 +8,11 @@ function MyLists() {
   const [searchValue, setSearchValue] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
   const [activeList, setActiveList] = useState<string>('allLists');
+  const [error, setError] = useState('');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
+    setError('');
   };
 
   useEffect(() => {
@@ -25,6 +27,7 @@ function MyLists() {
     const [newSort, newOrder] = e.target.value.split('_');
     setSort(newSort);
     setOrder(newOrder);
+    setError('');
   };
 
   return (
@@ -51,6 +54,7 @@ function MyLists() {
             placeholder="Пошук"
             value={searchValue}
             onChange={handleSearchChange}
+            maxLength={30}
           />
           <div>
             <span>Сортувати:</span>
@@ -67,9 +71,11 @@ function MyLists() {
             </select>
           </div>
         </div>
+        {error && <p>{error}</p>}
       </div>
 
       <BookList
+        onError={setError}
         sort={sort}
         order={order}
         search={debouncedSearch}

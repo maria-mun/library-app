@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import styles from './add-author.module.css';
 import XIcon from '../../components/Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -37,12 +37,27 @@ const AddAuthorForm = () => {
         body: JSON.stringify(authorData),
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
 
       setSuccessMessage('Автора/-ку успішно додано!');
       setTimeout(() => navigate('/allAuthors'), 2000);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.log(error);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
     } finally {
       setLoading(false);
     }

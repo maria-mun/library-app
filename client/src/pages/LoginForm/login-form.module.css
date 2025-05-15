@@ -153,7 +153,8 @@
   border: 1px solid rgb(0, 132, 0);
 }
 
-.input-error {
+.input-error,
+.error {
   font-size: 0.8rem;
   color: rgb(206, 0, 0);
 }

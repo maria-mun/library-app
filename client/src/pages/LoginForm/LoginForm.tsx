@@ -12,12 +12,11 @@ const LoginForm = () => {
     value: '',
     isFocused: false,
     isValid: false,
-    doesExist: true,
   });
   const [password, setPassword] = useState({
     value: '',
     isFocused: false,
-    isCorrect: true,
+    isValid: false,
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -27,11 +26,11 @@ const LoginForm = () => {
   const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setEmail({
-      doesExist: true,
       isFocused: true,
       value: newValue,
       isValid: validateEmail(newValue),
     });
+    setError('');
   };
 
   const handlePasswordInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,8 +38,9 @@ const LoginForm = () => {
     setPassword({
       isFocused: true,
       value: newValue,
-      isCorrect: true,
+      isValid: newValue.length > 0,
     });
+    setError('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,55 +48,34 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email.value,
-        password.value
-      );
+      await signInWithEmailAndPassword(auth, email.value, password.value);
 
-      console.log('Успішний вхід:', userCredential.user.displayName);
-
-      navigate(-1);
+      navigate('/allBooks');
     } catch (err) {
       const error = err as { code: string };
       if (error.code === 'auth/invalid-credential') {
-        try {
-          console.log('Перевірка email:', email.value);
-          const response = await fetch(
-            `http://localhost:4000/api/auth/user-exists?email=${email.value}`
-          );
-          const { exists } = await response.json();
-          console.log(exists);
-
-          if (!exists) {
-            setEmail((prev) => ({ ...prev, doesExist: false }));
-          } else {
-            setPassword((prev) => ({ ...prev, isCorrect: false }));
-          }
-        } catch (fetchError) {
-          console.error('Помилка перевірки email:', fetchError);
-          setError('Помилка перевірки email');
-        }
+        setError('Неправильна електронна адреса або пароль');
       } else {
-        setError('Помилка сервера');
+        navigate('/error', {
+          state: {
+            code: 500,
+            message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+          },
+        });
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const formIsValid =
-    email.isValid &&
-    email.doesExist &&
-    password.value.length > 0 &&
-    password.isCorrect;
+  const formIsValid = email.isValid && password.value.length > 0;
 
   return (
     <form className={styles.form}>
       <button
         type="button"
         className={styles['close-btn']}
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/allBooks')}
       >
         <XIcon size={30} />
       </button>
@@ -107,14 +86,10 @@ const LoginForm = () => {
         label="Електронна адреса"
         onChange={handleEmailInput}
         value={email.value}
-        isValid={email.isValid && email.doesExist}
+        isValid={email.isValid}
         placeholder="Електронна адреса"
         isFocused={email.isFocused}
-        errorMsg={
-          !email.doesExist
-            ? 'Ця адреса ще не зареєстрована'
-            : 'Введіть коректну адресу електронної пошти'
-        }
+        errorMsg={'Введіть коректну адресу електронної пошти'}
       />
       <Input
         name="password"
@@ -122,10 +97,10 @@ const LoginForm = () => {
         label="Пароль"
         onChange={handlePasswordInput}
         value={password.value}
-        isValid={password.isCorrect}
+        isValid={password.isValid}
         placeholder="Пароль"
         isFocused={password.isFocused}
-        errorMsg="Пароль не вірний"
+        errorMsg="Введіть пароль"
       />
       <label htmlFor="showPassword">
         <input

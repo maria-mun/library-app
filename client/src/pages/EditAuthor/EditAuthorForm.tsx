@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import styles from './edit-author-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -26,7 +26,6 @@ const EditAuthorForm = () => {
 
   useEffect(() => {
     const fetchAuthor = async () => {
-      console.log(authorId);
       try {
         const res = await fetch(`${API_URL}/authors/${authorId}`);
         if (!res.ok) throw new Error('Не вдалося отримати дані автора');
@@ -65,11 +64,26 @@ const EditAuthorForm = () => {
         body: JSON.stringify(authorData),
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
       setSuccessMessage('Автора/-ку успішно оновлено!');
       setTimeout(() => navigate('/allAuthors'), 2000);
     } catch (err) {
       console.error(err);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
     } finally {
       setLoading(false);
     }

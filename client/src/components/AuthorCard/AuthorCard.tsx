@@ -1,7 +1,7 @@
 import styles from './author-card.module.css';
 import { Link } from 'react-router-dom';
 import { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../AuthContext';
 import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
 

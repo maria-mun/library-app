@@ -3,6 +3,7 @@ import { Author } from '../models/Author';
 import { User } from '../models/User';
 import { Request, Response } from 'express';
 import { verifyToken } from '../middleware/authMiddleware';
+import { query, body, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -39,58 +40,100 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-//валідувати і санітизувати
-router.post('/add', verifyToken, async (req: Request, res: Response) => {
-  const firebaseUid = req.user?.uid;
-  const user = await User.findOne({ firebaseUid });
-  if (!user) {
-    res.status(403).json({
-      message: 'Заборонено: тільки для зареєстрованих користувачів',
-    });
-    return;
-  }
+const authorValidation = [
+  body('name')
+    .trim()
+    .notEmpty()
+    .withMessage("Ім'я обов'язкове")
+    .isLength({ max: 100 })
+    .withMessage("Ім'я має бути не довше 100 символів")
+    .escape(),
 
-  try {
-    const newAuthor = new Author(req.body);
-    const createdAuthor = await newAuthor.save();
-    res.status(200).json(createdAuthor);
-  } catch (error) {
-    res.status(500).json({
-      message: 'Щось пішло не так при додаванні автора. Спробуйте ще раз.',
-      error,
-    });
-  }
-});
+  body('country')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 50 })
+    .withMessage('Назва країни має бути не довше 50 символів')
+    .escape(),
 
-//валідувати і санітизувати
-router.put('/edit/:id', verifyToken, async (req: Request, res: Response) => {
-  const firebaseUid = req.user?.uid;
-  const user = await User.findOne({ firebaseUid });
-  if (!user) {
-    res
-      .status(403)
-      .json({ message: 'Заборонено: тільки для зареєстрованих користувачів' });
-    return;
-  }
+  body('description')
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Опис має бути не довше 1000 символів')
+    .escape(),
+];
 
-  try {
-    const updated = await Author.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-
-    if (!updated) {
-      res.status(404).json({ message: 'Автор не знайдений' });
+router.post(
+  '/add',
+  verifyToken,
+  authorValidation,
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+    const firebaseUid = req.user?.uid;
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      res.status(403).json({
+        message: 'Заборонено: тільки для зареєстрованих користувачів',
+      });
       return;
     }
 
-    res.status(200).json(updated);
-  } catch (error) {
-    console.error('Помилка при оновленні автора:', error);
-    res.status(500).json({
-      message: 'Щось пішло не так при оновленні автора. Спробуйте ще раз.',
-    });
+    try {
+      const newAuthor = new Author(req.body);
+      const createdAuthor = await newAuthor.save();
+      res.status(200).json(createdAuthor);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Щось пішло не так при додаванні автора. Спробуйте ще раз.',
+        error,
+      });
+    }
   }
-});
+);
+
+router.put(
+  '/edit/:id',
+  verifyToken,
+  authorValidation,
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+    const firebaseUid = req.user?.uid;
+    const user = await User.findOne({ firebaseUid });
+    if (!user) {
+      res.status(403).json({
+        message: 'Заборонено: тільки для зареєстрованих користувачів',
+      });
+      return;
+    }
+
+    try {
+      const updated = await Author.findByIdAndUpdate(req.params.id, req.body, {
+        new: true,
+      });
+
+      if (!updated) {
+        res.status(404).json({ message: 'Автор не знайдений' });
+        return;
+      }
+
+      res.status(200).json(updated);
+    } catch (error) {
+      console.error('Помилка при оновленні автора:', error);
+      res.status(500).json({
+        message: 'Щось пішло не так при оновленні автора. Спробуйте ще раз.',
+      });
+    }
+  }
+);
 
 router.delete(
   '/delete/:id',

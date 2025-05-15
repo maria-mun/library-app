@@ -3,7 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../../firebase/auth';
 import styles from './register-form.module.css';
 import Input from '../../components/Input/Input';
+
 import XIcon from '../../components/Icons/XIcon';
+const API_URL = import.meta.env.VITE_API_URL;
 
 const RegisterForm = () => {
   const [displayName, setDisplayName] = useState({
@@ -81,25 +83,45 @@ const RegisterForm = () => {
         displayName.value
       );
 
-      const response = await fetch('http://localhost:4000/api/auth/register', {
+      const token = await user.getIdToken();
+
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
-          firebaseUid: user.uid,
           name: user.displayName,
           email: user.email,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Помилка при додаванні користувача до бази даних');
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
       }
+
       setSuccessMessage(`Користувач ${user.displayName} зареєстрований!`);
       setTimeout(() => navigate('/allBooks'), 2000);
     } catch (err) {
       const error = err as { code: string };
+
       if (error.code === 'auth/email-already-in-use') {
         setEmail((prev) => ({ ...prev, isTaken: true }));
+      } else {
+        navigate('/error', {
+          state: {
+            code: 500,
+            message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+          },
+        });
       }
     } finally {
       setLoading(false);
