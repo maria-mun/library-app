@@ -1,0 +1,225 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Loader from '../Loader/Loader';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
+import { useAuth } from '../../AuthContext';
+import styles from './comment-section.module.css';
+const API_URL = import.meta.env.VITE_API_URL;
+
+export default function CommentSection({ bookId }: { bookId: string }) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [sortOrder, setSortOrder] = useState<string>();
+
+  useEffect(() => {
+    fetchComments();
+  }, [sortOrder]);
+
+  const fetchComments = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `${API_URL}/comments/book/${bookId}?sort=${sortOrder}`
+      );
+      const data = await res.json();
+      setComments(data);
+    } catch {
+      console.error('Не вдалося завантажити коментарі');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortOrder(e.target.value);
+  };
+
+  return (
+    <div className={styles['comment-section']}>
+      <CommentInput bookId={bookId} onCommentAdded={fetchComments} />
+      <div>
+        <span>Сортувати:</span>
+        <select
+          onChange={handleSortChange}
+          defaultValue="newest"
+          className={styles.sort}
+        >
+          <option value="newest">Спочатку новіші</option>
+          <option value="oldest">Спочатку старіші</option>
+        </select>
+      </div>
+      {loading ? (
+        <Loader />
+      ) : (
+        <Comments comments={comments} onCommentDeleted={fetchComments} />
+      )}
+    </div>
+  );
+}
+
+type Comment = {
+  _id: string;
+  bookId: string;
+  userId: {
+    _id: string;
+    name: string;
+  };
+  text: string;
+  createdAt: string;
+};
+type CommentsProps = {
+  comments: Comment[];
+  onCommentDeleted: () => void;
+};
+
+function Comments({ comments, onCommentDeleted }: CommentsProps) {
+  const { userId, role, getFreshToken } = useAuth();
+  const [modalCommentId, setModalCommentId] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+
+  const handleDelete = async (id: string) => {
+    try {
+      const token = await getFreshToken();
+      const response = await fetch(`${API_URL}/comments/delete/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        navigate('/error', {
+          state: {
+            code: response.status,
+            message: errorData.message || 'Щось пішло не так',
+          },
+        });
+        return;
+      }
+      onCommentDeleted();
+      setModalCommentId(null);
+    } catch (err) {
+      console.log(err);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
+        },
+      });
+    }
+  };
+
+  if (comments.length === 0) {
+    return <p>Коментарів поки немає.</p>;
+  }
+
+  return (
+    <div className={styles.comments}>
+      {comments.map((com) => {
+        const date = new Date(com.createdAt);
+        const formatted = date.toLocaleString('uk-UA', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+        return (
+          <div key={com._id} className={styles.comment}>
+            <div className={styles['user-photo']}>
+              {com.userId ? (
+                <img
+                  src={'com.userId.photo' || 'defaultUserPhoto'}
+                  alt="User photo"
+                />
+              ) : (
+                <img src={'deletedUserPhoto'} alt="Deleted user" />
+              )}
+            </div>
+            <div className={styles['com-content']}>
+              <h6>{com.userId ? com.userId.name : '(Користувач видалений)'}</h6>
+              <p className={styles.text}>{com.text}</p>
+              <p className={styles.date}>{formatted} </p>
+              {(userId === com.userId._id || role === 'admin') && (
+                <button
+                  className={styles['delete-my-comment-btn']}
+                  onClick={() => setModalCommentId(com._id)}
+                >
+                  {userId === com.userId._id
+                    ? 'Видалити свій коментар'
+                    : 'Видалити коментар'}
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      })}
+      {modalCommentId && (
+        <ConfirmModal
+          message="Ви впевнені, що хочете видалити свій коментар?"
+          onClose={() => setModalCommentId(null)}
+          onConfirm={() => handleDelete(modalCommentId)}
+        />
+      )}
+    </div>
+  );
+}
+
+type CommentInputProps = {
+  bookId: string;
+  onCommentAdded: () => void;
+};
+
+function CommentInput({ bookId, onCommentAdded }: CommentInputProps) {
+  const { getFreshToken } = useAuth();
+  const [text, setText] = useState('');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async () => {
+    if (!text.trim()) return;
+
+    try {
+      const token = await getFreshToken();
+
+      const response = await fetch(`${API_URL}/comments/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text, bookId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(`Помилка ${response.status}. ${errorData.message}.`);
+        return;
+      }
+
+      setText('');
+      onCommentAdded();
+    } catch (error) {
+      console.log(error);
+      alert("Не вдалося зв'язатися із сервером. Спробуйте ще раз.");
+    }
+  };
+
+  return (
+    <div className={styles['comment-input']}>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="Залишіть коментар"
+      ></textarea>
+      {user ? (
+        <button onClick={handleSubmit}>Надіслати</button>
+      ) : (
+        <button onClick={() => navigate('/register')}>Надіслати</button>
+      )}
+    </div>
+  );
+}

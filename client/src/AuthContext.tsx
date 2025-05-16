@@ -8,6 +8,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 interface AuthContextType {
   user: User | null;
   role: string | null;
+  userId: string | null;
   loadingUser: boolean;
   loginUser: (email: string, password: string) => Promise<User | null>;
   registerUser: (
@@ -27,6 +28,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
   const [role, setRole] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -35,10 +37,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(firebaseUser);
         try {
           await new Promise((res) => setTimeout(res, 3000));
-          const role = await fetchUserRole(firebaseUser);
+          const { role, userMongoId } = await fetchUserRole(firebaseUser);
           setRole(role);
+          setUserId(userMongoId);
         } catch (err) {
           setRole(null);
+          setUserId(null);
           console.error('Помилка при отриманні ролі:', err);
         }
       } else {
@@ -62,14 +66,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw new Error('Не вдалося отримати роль');
     }
     const data = await res.json();
-    console.log('role', data.role);
-    return data.role;
+    console.log('role', data);
+    const role = data.role;
+    const userMongoId = data.user._id;
+    return { role, userMongoId };
   };
 
   const logoutUser = async () => {
     await signOut(auth);
     setUser(null);
     setRole(null);
+    setUserId(null);
   };
 
   const getFreshToken = async (): Promise<string | null> => {
@@ -82,6 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{
         user,
         role,
+        userId,
         loadingUser,
         loginUser,
         registerUser,

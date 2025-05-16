@@ -39,7 +39,11 @@ export default function Rating({ bookId, currentRating }: RatingProps) {
         </div>
       ) : (
         <div className={styles.rating}>
-          <Link to="/register" className={styles.link}>
+          <Link
+            to="/register"
+            state={{ from: location.pathname }}
+            className={styles.link}
+          >
             {ratingContent}
           </Link>
         </div>

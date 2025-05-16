@@ -1,7 +1,7 @@
 import styles from './header.module.css';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../AuthContext';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { User } from 'firebase/auth';
 
 interface ProfileProps {
@@ -33,12 +33,14 @@ export default function Header() {
         <div className={styles['login-buttons']}>
           <NavLink
             to="/register"
+            state={{ from: location.pathname }}
             className={styles.button + ' ' + styles['register-btn']}
           >
             Реєстрація
           </NavLink>
           <NavLink
             to="/login"
+            state={{ from: location.pathname }}
             className={styles.button + ' ' + styles['login-btn']}
           >
             Вхід
@@ -51,11 +53,9 @@ export default function Header() {
 
 function ProfileMenu({ user, logoutUser }: ProfileProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogout = async () => {
     logoutUser();
-    navigate('/allBooks');
   };
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);

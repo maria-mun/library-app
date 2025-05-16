@@ -1,0 +1,15 @@
+.comments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  width: clamp(380px, 100%, 800px);
+}
+
+.comment {
+  padding: 1em;
+  border-bottom: 1px solid rgb(70, 70, 70);
+}
+
+.text {
+  white-space: pre-line;
+}

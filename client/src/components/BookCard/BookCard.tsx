@@ -36,9 +36,17 @@ type BookCardProps = {
   user: User | null;
   book: Book;
   onDelete: () => void;
+  isList?: boolean; //чи список книг зараз рендериться для списку користувача
+  onRemovalFromMyList: () => void;
 };
 
-const BookCard = ({ user, book, onDelete }: BookCardProps) => {
+const BookCard = ({
+  user,
+  book,
+  onDelete,
+  isList,
+  onRemovalFromMyList,
+}: BookCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeLists, setActiveLists] = useState<string[]>(
     book.userData?.lists || []
@@ -111,6 +119,10 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
             ? [...activeLists, list]
             : activeLists.filter((l) => l !== list)
         );
+      }
+
+      if (isList) {
+        onRemovalFromMyList();
       }
     } catch (err) {
       console.error(err);
@@ -198,7 +210,11 @@ const BookCard = ({ user, book, onDelete }: BookCardProps) => {
                 } else {
                   return (
                     <li key={item.key} className={styles.option}>
-                      <Link to="/register" className={styles.link}>
+                      <Link
+                        to="/register"
+                        state={{ from: location.pathname }}
+                        className={styles.link}
+                      >
                         {item.label}
                       </Link>
                     </li>

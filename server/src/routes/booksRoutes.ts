@@ -168,7 +168,7 @@ router.get('/public/:id', async (req: Request, res: Response) => {
 });
 
 router.get(
-  'authorized/:id',
+  '/authorized/:id',
   verifyToken,
   async (req: Request, res: Response) => {
     const firebaseUid = req.user?.uid;
@@ -289,7 +289,6 @@ router.post(
   }
 );
 
-//валідувати і санітизувати
 router.put(
   '/edit/:id',
   verifyToken,

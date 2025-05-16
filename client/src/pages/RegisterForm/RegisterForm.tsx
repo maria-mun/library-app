@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { registerUser } from '../../firebase/auth';
 import styles from './register-form.module.css';
 import Input from '../../components/Input/Input';
@@ -36,6 +36,8 @@ const RegisterForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   function handleDisplayNameInput(e: React.ChangeEvent<HTMLInputElement>) {
     const newValue = e.target.value;
@@ -109,7 +111,7 @@ const RegisterForm = () => {
       }
 
       setSuccessMessage(`Користувач ${user.displayName} зареєстрований!`);
-      setTimeout(() => navigate('/allBooks'), 2000);
+      setTimeout(() => navigate(from, { replace: true }), 2000);
     } catch (err) {
       const error = err as { code: string };
 
@@ -154,7 +156,7 @@ const RegisterForm = () => {
       <button
         type="button"
         className={styles['close-btn']}
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(from, { replace: true })}
       >
         <XIcon size={30} />
       </button>
@@ -231,7 +233,11 @@ const RegisterForm = () => {
       </button>
       <p className={styles.text}>
         Вже маєте акаунт?{' '}
-        <Link to="/login" className={styles.link}>
+        <Link
+          to="/login"
+          state={{ from: location.state?.from || '/' }}
+          className={styles.link}
+        >
           Увійти
         </Link>
       </p>

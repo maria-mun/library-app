@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase/firebaseConfig';
 import Input from '../../components/Input/Input';
@@ -22,6 +22,8 @@ const LoginForm = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || '/';
 
   const handleEmailInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
@@ -50,7 +52,7 @@ const LoginForm = () => {
     try {
       await signInWithEmailAndPassword(auth, email.value, password.value);
 
-      navigate('/allBooks');
+      navigate(from, { replace: true });
     } catch (err) {
       const error = err as { code: string };
       if (error.code === 'auth/invalid-credential') {
@@ -75,7 +77,7 @@ const LoginForm = () => {
       <button
         type="button"
         className={styles['close-btn']}
-        onClick={() => navigate('/allBooks')}
+        onClick={() => navigate(from, { replace: true })}
       >
         <XIcon size={30} />
       </button>
@@ -125,7 +127,11 @@ const LoginForm = () => {
       </button>
       <p className={styles.text}>
         Ще не зареєстровані?{' '}
-        <Link to="/register" className={styles.link}>
+        <Link
+          to="/register"
+          state={{ from: location.state?.from || '/' }}
+          className={styles.link}
+        >
           Реєстрація
         </Link>
       </p>

@@ -164,6 +164,8 @@ function BookList({
             key={book._id}
             book={book}
             onDelete={() => setModalBookId(book._id)}
+            isList={!!list}
+            onRemovalFromMyList={fetchBooks}
           />
         ))}
       </div>
