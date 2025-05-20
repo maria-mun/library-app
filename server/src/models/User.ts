@@ -57,6 +57,17 @@ const userSchema = new mongoose.Schema({
       dateAdded: { type: Date, default: Date.now },
     },
   ],
+
+  favoriteAuthors: [
+    {
+      authorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Author',
+        required: true,
+      },
+      dateAdded: { type: Date, default: Date.now },
+    },
+  ],
 });
 
 const User = mongoose.model('User', userSchema);

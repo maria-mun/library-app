@@ -11,6 +11,7 @@ type Author = {
   name: string;
   country?: string;
   books?: Book[];
+  isFavorite?: boolean;
 };
 
 type Book = {
@@ -19,7 +20,8 @@ type Book = {
   author: Author;
   year?: number;
   cover?: string;
-  rating?: number;
+  averageRating?: number;
+  ratingsCount?: number;
   genres?: string[];
 };
 
@@ -27,12 +29,32 @@ const AllAuthors = () => {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [modalAuthorId, setModalAuthorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { getFreshToken } = useAuth();
+  const { getFreshToken, user, loadingUser } = useAuth();
+
+  useEffect(() => {
+    if (!loadingUser) {
+      fetchAuthors();
+    }
+    console.log('authors fetched');
+  }, [loadingUser]);
 
   const fetchAuthors = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/authors`);
+      const url = `${API_URL}/authors/${user ? 'authorized' : 'public'}`;
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (user) {
+        const token = await getFreshToken();
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
       const data = await response.json();
       setAuthors(data);
     } catch (error) {
@@ -41,10 +63,6 @@ const AllAuthors = () => {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchAuthors();
-  }, []);
 
   const handleDelete = async (id: string) => {
     try {

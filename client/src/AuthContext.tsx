@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+
 import { auth } from './firebase/firebaseConfig.ts';
 import { onIdTokenChanged, signOut, User } from 'firebase/auth';
 import { loginUser, registerUser } from './firebase/auth';
@@ -48,6 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       } else {
         setUser(null);
         setRole(null);
+        setUserId(null);
       }
       setLoadingUser(false);
     });
@@ -77,6 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setRole(null);
     setUserId(null);
+    setLoadingUser(false);
   };
 
   const getFreshToken = async (): Promise<string | null> => {

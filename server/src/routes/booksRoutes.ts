@@ -3,6 +3,7 @@ import { query, body, validationResult } from 'express-validator';
 import { Book } from '../models/Book';
 import { Author } from '../models/Author';
 import { User } from '../models/User';
+import { Comment } from '../models/Comment';
 import { Request, Response } from 'express';
 import { verifyToken } from '../middleware/authMiddleware';
 
@@ -25,7 +26,7 @@ router.get(
       return;
     }
 
-    const { sort = 'title', order = 'asc', author, search } = req.query;
+    const { sort, order, author, search } = req.query;
 
     try {
       const filter: any = {};
@@ -70,7 +71,7 @@ router.get(
     }
 
     const firebaseUid = req.user?.uid;
-    const { sort = 'title', order = 'asc', author, search, list } = req.query;
+    const { sort, order, author, search, list } = req.query;
 
     try {
       const filter: any = {};
@@ -244,7 +245,6 @@ const validateBookData = [
     .toInt(),
 ];
 
-//валідувати і санітизувати
 router.post(
   '/add',
   verifyToken,
@@ -371,6 +371,7 @@ router.delete(
           },
         }
       );
+      await Comment.deleteMany({ bookId });
       await Book.findByIdAndDelete(bookId);
       res.status(200).json({ message: 'Книгу успішно видалено.' });
     } catch (error) {

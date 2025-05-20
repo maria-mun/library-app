@@ -36,7 +36,7 @@ export default function CommentSection({ bookId }: { bookId: string }) {
 
   return (
     <div className={styles['comment-section']}>
-      <CommentInput bookId={bookId} onCommentAdded={fetchComments} />
+      <p>Коментарі ({comments.length})</p>
       <div>
         <span>Сортувати:</span>
         <select
@@ -48,6 +48,7 @@ export default function CommentSection({ bookId }: { bookId: string }) {
           <option value="oldest">Спочатку старіші</option>
         </select>
       </div>
+      <CommentInput bookId={bookId} onCommentAdded={fetchComments} />
       {loading ? (
         <Loader />
       ) : (
@@ -61,7 +62,7 @@ type Comment = {
   _id: string;
   bookId: string;
   userId: {
-    _id: string;
+    _id: string | null;
     name: string;
   };
   text: string;
@@ -136,14 +137,17 @@ function Comments({ comments, onCommentDeleted }: CommentsProps) {
                   alt="User photo"
                 />
               ) : (
-                <img src={'deletedUserPhoto'} alt="Deleted user" />
+                <img
+                  src={'deletedUserPhoto'}
+                  alt="Видалений користувач, фото"
+                />
               )}
             </div>
             <div className={styles['com-content']}>
-              <h6>{com.userId ? com.userId.name : '(Користувач видалений)'}</h6>
+              <h6>{com.userId ? com.userId.name : '[Користувач видалений]'}</h6>
               <p className={styles.text}>{com.text}</p>
               <p className={styles.date}>{formatted} </p>
-              {(userId === com.userId._id || role === 'admin') && (
+              {(userId === com.userId?._id || role === 'admin') && (
                 <button
                   className={styles['delete-my-comment-btn']}
                   onClick={() => setModalCommentId(com._id)}

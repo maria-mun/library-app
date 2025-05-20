@@ -1,7 +1,8 @@
 import styles from './header.module.css';
 import { useState, useEffect, useRef } from 'react';
+
 import { useAuth } from '../../AuthContext';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { User } from 'firebase/auth';
 
 interface ProfileProps {
@@ -53,9 +54,11 @@ export default function Header() {
 
 function ProfileMenu({ user, logoutUser }: ProfileProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     logoutUser();
+    navigate('/allBooks');
   };
 
   const dropdownRef = useRef<HTMLDivElement | null>(null);
@@ -93,7 +96,7 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
       {isOpen && (
         <div className={styles.dropdown}>
           <NavLink
-            to="/profile"
+            to="/myProfile"
             className={styles['menu-option']}
             onClick={() => setIsOpen(false)}
           >

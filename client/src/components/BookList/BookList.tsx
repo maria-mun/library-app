@@ -21,7 +21,8 @@ type Book = {
   author: Author;
   year?: number;
   cover?: string;
-  rating?: number;
+  averageRating?: number;
+  ratingsCount?: number;
   genres?: string[];
 };
 
@@ -49,10 +50,10 @@ function BookList({
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loadingUser || user) {
+    if (!loadingUser) {
       fetchBooks();
     }
-  }, [authorId, sort, order, search, loadingUser, user, list]);
+  }, [authorId, sort, order, search, loadingUser, list]);
 
   const fetchBooks = async () => {
     setIsLoading(true);

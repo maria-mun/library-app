@@ -44,7 +44,8 @@ export default function Rating({ bookId, currentRating }: RatingProps) {
             state={{ from: location.pathname }}
             className={styles.link}
           >
-            {ratingContent}
+            <StarIcon filled={false} />
+            <p>Оцінити</p>
           </Link>
         </div>
       )}

@@ -17,6 +17,7 @@ import LoginForm from './pages/LoginForm/LoginForm';
 import MyLists from './pages/MyLists/MyLists';
 import EditBookForm from './pages/EditBook/EditBookForm';
 import EditAuthorForm from './pages/EditAuthor/EditAuthorForm';
+import ProfilePage from './pages/ProfilePage/ProfilePage';
 
 const router = createBrowserRouter([
   {
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: '/myLists',
         element: <MyLists />,
+      },
+      {
+        path: '/myProfile',
+        element: <ProfilePage />,
       },
     ],
   },

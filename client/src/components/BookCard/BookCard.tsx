@@ -27,7 +27,8 @@ type Book = {
   author: Author;
   year?: number;
   cover?: string;
-  rating?: number;
+  averageRating?: number;
+  ratingsCount?: number;
   genres?: string[];
   userData?: UserData;
 };
@@ -163,7 +164,11 @@ const BookCard = ({
         </p>
         <span className={styles.country}>{book.author.country}</span>
         <span className={styles.year}>{book.year}</span>
-
+        {book.averageRating != null
+          ? `Середня оцінка: ${book.averageRating.toFixed(1)} (${
+              book.ratingsCount
+            } оцінок)`
+          : 'Ще немає оцінок'}
         <Rating
           bookId={book._id}
           currentRating={book.userData?.rating || null}

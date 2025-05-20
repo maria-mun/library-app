@@ -73,3 +73,13 @@ export const decodeTokenOnly = async (
     res.status(401).json({ error: 'Invalid token' });
   }
 };
+
+export const deleteFirebaseUser = async (uid: string) => {
+  await auth.deleteUser(uid);
+};
+
+export const updateFirebaseName = async (uid: string, newName: string) => {
+  await auth.updateUser(uid, {
+    displayName: newName,
+  });
+};

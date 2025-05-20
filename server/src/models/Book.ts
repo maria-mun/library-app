@@ -9,8 +9,9 @@ const bookSchema = new mongoose.Schema({
   },
   year: Number,
   cover: String,
-  rating: Number,
   genres: [String],
+  averageRating: { type: Number, default: null },
+  ratingsCount: { type: Number, default: 0 },
 });
 const Book = mongoose.model('Book', bookSchema);
 export { Book };

@@ -1,7 +1,12 @@
 import { Request, Response, Router } from 'express';
 import { body, query, validationResult } from 'express-validator';
 import { User } from '../models/User';
-import { verifyToken, decodeTokenOnly } from '../middleware/authMiddleware';
+import {
+  verifyToken,
+  decodeTokenOnly,
+  deleteFirebaseUser,
+  updateFirebaseName,
+} from '../middleware/authMiddleware';
 import { rateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
@@ -63,6 +68,54 @@ router.post(
     }
   }
 );
+
+router.delete('/deleteMe', verifyToken, async (req: Request, res: Response) => {
+  try {
+    const uid = req.user?.uid;
+
+    if (uid) await deleteFirebaseUser(uid);
+
+    const deleted = await User.findOneAndDelete({ firebaseUid: uid });
+
+    if (!deleted) {
+      res.status(404).json({ message: 'Користувача в Mongo не знайдено' });
+      return;
+    }
+
+    res.status(200).json({ message: 'Профіль успішно видалено' });
+  } catch (err) {
+    console.error('Помилка при видаленні профілю:', err);
+    res.status(500).json({ message: 'Не вдалося видалити профіль' });
+  }
+});
+
+router.put('/updateName', verifyToken, async (req: Request, res: Response) => {
+  const uid = req.user?.uid;
+  const { newName } = req.body;
+  try {
+    if (!newName || newName.trim().length < 2) {
+      res.status(400).json({ message: 'Некоректне ім’я' });
+      return;
+    }
+
+    if (uid) await updateFirebaseName(uid, newName);
+
+    const user = await User.findOneAndUpdate(
+      { firebaseUid: uid },
+      { name: newName },
+      { new: true }
+    );
+
+    if (!user) {
+      res.status(404).json({ message: 'Користувача не знайдено' });
+      return;
+    }
+    res.status(200).json({ message: 'Ім’я оновлено', user });
+  } catch (err) {
+    console.error('Помилка оновлення імені:', err);
+    res.status(500).json({ message: 'Помилка сервера' });
+  }
+});
 
 /* router.get(
   '/user-exists',

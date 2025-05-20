@@ -7,10 +7,69 @@ import { query, body, validationResult } from 'express-validator';
 
 const router = express.Router();
 
-//зробити окремо public і authorized коли буду робити додавання авторів до улюблених
-router.get('/', async (req: Request, res: Response) => {
+router.get(
+  '/authorized',
+  verifyToken,
+  [
+    query('search')
+      .optional()
+      .trim()
+      .escape()
+      .isLength({ max: 30 })
+      .withMessage('Максимальна довжина пошукового запиту — 30 символів.'),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ message: errors.array()[0].msg });
+      return;
+    }
+
+    const firebaseUid = req.user?.uid;
+    const searchQuery = req.query.search;
+
+    try {
+      const filter: any = {};
+
+      if (searchQuery) {
+        filter.name = { $regex: searchQuery, $options: 'i' };
+      }
+
+      const authors = await Author.find(filter);
+
+      let favAuthorIds: string[] = [];
+
+      if (firebaseUid) {
+        const user = await User.findOne({ firebaseUid });
+
+        if (user) {
+          favAuthorIds = user.favoriteAuthors.map((item) =>
+            item.authorId.toString()
+          );
+        }
+      }
+
+      const result = authors.map((author) => {
+        const authorObj = author.toObject();
+        return {
+          ...authorObj,
+          isFavorite: favAuthorIds.includes(author._id.toString()),
+        };
+      });
+
+      res.json(result);
+    } catch (error) {
+      console.error('Помилка при отриманні авторів:', error);
+      res.status(500).json({
+        error: 'Щось пішло не так при отриманні авторів. Спробуйте ще раз.',
+      });
+    }
+  }
+);
+
+router.get('/public', async (req: Request, res: Response) => {
   try {
-    const searchQuery = req.query.search as string;
+    const searchQuery = req.query.search;
     let authors;
     if (searchQuery) {
       authors = await Author.find({

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
+const API_URL = import.meta.env.VITE_API_URL;
 
 type Author = {
   _id: string;
@@ -11,6 +12,7 @@ type Author = {
   country?: string;
   books?: Book[];
   photo?: string;
+  isFavorite?: boolean;
 };
 
 type Book = {
@@ -30,8 +32,9 @@ type AuthorCardProps = {
 
 const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(author.isFavorite);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { role } = useAuth();
+  const { user, role, getFreshToken } = useAuth();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -48,6 +51,38 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
+
+  const toggleFavorite = async () => {
+    const token = await getFreshToken();
+    const prevFavorite = isFavorite;
+    setIsFavorite(!prevFavorite);
+    try {
+      const res = await fetch(`${API_URL}/users/favoriteAuthors`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ authorId: author._id }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Не вдалося оновити улюблених авторів');
+      }
+
+      const data = await res.json();
+      const status = data.status;
+
+      const shouldBeFavorite = status === 'added';
+      if (shouldBeFavorite !== !prevFavorite) {
+        // якщо стан розсинхронізувався — оновлюємо вручну
+        setIsFavorite(shouldBeFavorite);
+      }
+    } catch (err) {
+      console.error('Помилка при оновленні улюблених авторів:', err);
+    }
+  };
+
   return (
     <div className={styles.author}>
       <Link to={`/author/${author._id}`}>
@@ -62,6 +97,17 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
           <Link to={`/author/${author._id}`}>{author.name}</Link>
         </h2>
         <p className={styles.country}>{author.country}</p>
+        {user ? (
+          <div onClick={toggleFavorite}>
+            {isFavorite ? 'Видалити з улюблених' : 'Додати до улюблених'}
+          </div>
+        ) : (
+          <div>
+            <Link to="/register" state={{ from: location.pathname }}>
+              Додати до улюблених
+            </Link>
+          </div>
+        )}
       </div>
       <div className={styles['options-cont']} ref={dropdownRef}>
         <button
