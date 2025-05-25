@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import styles from './add-book-form.module.css';
-import Select from '../../components/Select/Select';
+import Select, { SelectOption } from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
-import { SelectOption } from '../../components/Select/Select';
 import XIcon from '../../components/Icons/XIcon';
+import Spinner from '../../components/Spinner/Spinner';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-const allGenres = [
+const allGenres: SelectOption[] = [
   'Антиутопія',
   'Біографія / Мемуари',
   'Бізнес / Економіка',
@@ -46,12 +47,13 @@ const allGenres = [
   'Філософія',
   'Шпигунський роман',
   'Юнацька література',
-];
+].map((genre) => ({ label: genre, value: genre }));
 
 interface Author {
   _id: string;
   name: string;
 }
+
 const AddBookForm = () => {
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -73,7 +75,7 @@ const AddBookForm = () => {
       year,
       cover,
       author: author?._id,
-      genres: genres,
+      genres: genres.map((g) => g.value),
     };
 
     try {
@@ -136,10 +138,9 @@ const AddBookForm = () => {
       >
         <XIcon size={30} />
       </button>
+
       <h2 className={styles.heading}>Заповніть дані про книгу</h2>
-      <p>
-        Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
-      </p>
+
       <div className={styles['input-group']}>
         <label htmlFor="title" className={styles.label}>
           Назва книги<span className="asterisk">*</span>
@@ -155,7 +156,9 @@ const AddBookForm = () => {
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
+
       <AuthorAutocompleteInput value={author} onChange={setAuthor} />
+
       <div className={styles['input-group']}>
         <label htmlFor="year" className={styles.label}>
           Рік виходу
@@ -171,13 +174,15 @@ const AddBookForm = () => {
           onChange={(e) => setYear(e.target.value)}
         />
       </div>
+
       <Select
         label="Жанри"
         multiple
         options={allGenres}
         value={genres}
-        onChange={(o) => setGenres(o)}
+        onChange={setGenres}
       />
+
       <div className={styles['input-group']}>
         <label htmlFor="cover" className={styles.label}>
           Посилання на обкладинку
@@ -192,12 +197,13 @@ const AddBookForm = () => {
           onChange={(e) => setCover(e.target.value)}
         />
       </div>
+
       <button
         type="submit"
         className={styles['submit-btn']}
         disabled={!title.trim() || !author || loading}
       >
-        {loading ? <span className={styles.spinner}></span> : 'Додати'}
+        {loading ? <Spinner /> : 'Додати'}
       </button>
     </form>
   );

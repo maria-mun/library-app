@@ -4,14 +4,21 @@ header {
   z-index: 10000;
   width: 100%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
+  gap: 2rem;
   padding: 1rem;
   height: 3.5rem;
 
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
   border-bottom: 1px solid var(--accent2);
+}
+
+.nav {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 2rem;
+  margin-left: auto;
 }
 
 .link {
@@ -27,16 +34,17 @@ h1 .link {
   text-decoration: none;
   color: var(--accent2);
   font-weight: bold;
+  justify-items: flex-start;
 }
-header > .link:hover {
+.nav > .link:hover {
   color: var(--accent2);
   border-bottom: 2px solid var(--accent2);
 }
 
 .login-buttons {
-  padding-left: 1em;
+  padding-left: 1rem;
   display: flex;
-  gap: 0.5em;
+  gap: 0.5rem;
   align-items: center;
   border-left: 1px solid var(--neutral);
 }
@@ -76,19 +84,28 @@ header > .link:hover {
   position: relative;
 }
 
+.account-icon {
+  display: flex;
+  place-items: center;
+}
+
+.arrow-icon {
+  display: none;
+}
+
 .dropdown {
   position: absolute;
   top: 3rem;
   right: 1rem;
   background-color: var(--bg1);
-  border-radius: 0.5em;
+  border-radius: 0.5rem;
   box-shadow: 0 1px 10px rgba(0, 0, 0, 0.1);
-  padding: 1em;
+  padding: 1rem;
   z-index: 10000;
   display: flex;
   flex-direction: column;
   /* gap: 0.5em; */
-  width: 12em;
+  width: 12rem;
   font-size: 1rem;
   color: var(--accent1);
   box-shadow: black 0px 0px 10px 0px;
@@ -97,8 +114,8 @@ header > .link:hover {
 .menu-option {
   text-decoration: none;
   color: var(--accent1);
-  padding: 0.5em 0.8em;
-  border-radius: 0.5em;
+  padding: 0.5rem 0.8rem;
+  border-radius: 0.5rem;
   font-size: 1.1rem;
   /*   transition: all 0.2s ease-in-out; */
 }
@@ -122,12 +139,12 @@ header > .link:hover {
 }
 
 .logout-icon {
-  margin-right: 0.5em;
+  margin-right: 0.5rem;
 }
 
 .profile {
-  padding: 0.5em 0.8em;
-  border-radius: 0.5em;
+  padding: 0.5rem;
+  border-radius: 9999px;
   font-size: 1.1rem;
   /*  transition: all 0.3s ease-in-out; */
   background-color: var(--bg2);
@@ -135,14 +152,42 @@ header > .link:hover {
   border: none;
   display: flex;
   align-items: center;
-  gap: 0.5em;
+  gap: 0.3rem;
+  max-width: 10rem;
 }
 
 .profile:hover {
   background-color: var(--bg1);
 }
 
-hr {
-  border: none;
-  border-top: 1px solid var(--neutral);
+.profile .displayName {
+  display: none;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  word-break: break-word;
+  overflow: hidden;
+  flex: 1;
+}
+
+.dropdown .displayName {
+  padding: 0 0.8rem 0.5rem;
+  border-bottom: 1px solid grey;
+  color: grey;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (min-width: 600px) {
+  .profile .displayName {
+    display: -webkit-box;
+  }
+
+  .dropdown .displayName {
+    display: none;
+  }
+
+  .arrow-icon {
+    display: block;
+  }
 }

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styles from './edit-book-form.module.css';
-import Select from '../../components/Select/Select';
+import Select, { SelectOption } from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
-import { SelectOption } from '../../components/Select/Select';
 import XIcon from '../../components/Icons/XIcon';
+import Spinner from '../../components/Spinner/Spinner';
 const API_URL = import.meta.env.VITE_API_URL;
 import { useAuth } from '../../AuthContext';
 
@@ -21,7 +21,7 @@ interface Book {
   genres: string[];
 }
 
-const allGenres = [
+const allGenres: SelectOption[] = [
   'Антиутопія',
   'Біографія / Мемуари',
   'Бізнес / Економіка',
@@ -59,14 +59,15 @@ const allGenres = [
   'Філософія',
   'Шпигунський роман',
   'Юнацька література',
-];
+].map((genre) => ({ label: genre, value: genre }));
 
 const EditBookForm = () => {
-  const { getFreshToken } = useAuth();
   const { bookId } = useParams<{ bookId: string }>();
+
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  const { getFreshToken } = useAuth();
 
   const [genres, setGenres] = useState<SelectOption[]>([]);
   const [title, setTitle] = useState('');
@@ -84,7 +85,7 @@ const EditBookForm = () => {
         setYear(data.year);
         setCover(data.cover);
         setAuthor(data.author);
-        setGenres(data.genres);
+        setGenres(data.genres.map((genre) => ({ label: genre, value: genre })));
       } catch (err) {
         console.error('Помилка при завантаженні книги:', err);
       }
@@ -102,7 +103,7 @@ const EditBookForm = () => {
       year,
       cover,
       author: author?._id,
-      genres: genres,
+      genres: genres.map((g) => g.value),
     };
 
     try {
@@ -189,6 +190,7 @@ const EditBookForm = () => {
         <input
           className={styles.input}
           type="number"
+          max={new Date().getFullYear()}
           id="year"
           value={year}
           onChange={(e) => setYear(e.target.value)}
@@ -200,7 +202,7 @@ const EditBookForm = () => {
         multiple
         options={allGenres}
         value={genres}
-        onChange={(o) => setGenres(o)}
+        onChange={setGenres}
       />
 
       <div className={styles['input-group']}>
@@ -221,7 +223,7 @@ const EditBookForm = () => {
         className={styles['submit-btn']}
         disabled={!title.trim() || !author || loading}
       >
-        {loading ? <span className={styles.spinner}></span> : 'Оновити'}
+        {loading ? <Spinner /> : 'Оновити'}
       </button>
     </form>
   );

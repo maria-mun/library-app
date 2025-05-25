@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import styles from './edit-author-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
+import Spinner from '../../components/Spinner/Spinner';
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface Author {
@@ -178,7 +179,7 @@ const EditAuthorForm = () => {
         className={styles['submit-btn']}
         disabled={!name.trim() || loading}
       >
-        {loading ? <span className={styles.spinner}></span> : 'Оновити'}
+        {loading ? <Spinner /> : 'Оновити'}
       </button>
     </form>
   );

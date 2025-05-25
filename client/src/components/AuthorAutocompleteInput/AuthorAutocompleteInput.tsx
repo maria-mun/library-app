@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { useAuth } from '../../AuthContext';
 import styles from './author-autocomplete-input.module.css';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -17,6 +18,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { user, getFreshToken } = useAuth();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -29,9 +31,25 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
       setAuthors([]);
       return;
     }
-    setIsLoading(true);
+
     try {
-      const response = await fetch(`${API_URL}/authors?search=${query}`);
+      const url = `${API_URL}/authors/${
+        user ? 'authorized' : 'public'
+      }?search=${query}`;
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (user) {
+        const token = await getFreshToken();
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+
       if (!response.ok) throw new Error('Помилка при отриманні авторів');
       const data = await response.json();
       setAuthors(data || []);
@@ -46,8 +64,9 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    onChange(null); // обнуляємо вибраного автора
+    onChange(null);
     setIsOpen(true);
+    setIsLoading(true);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -56,6 +75,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
         fetchAuthors(value);
       } else {
         setAuthors([]);
+        setIsLoading(false);
       }
     }, 600);
   };
@@ -121,10 +141,13 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
         {!isLoading && authors.length === 0 && inputValue !== '' && (
           <p>Нічого не знайдено</p>
         )}
-        {!isLoading && authors.length === 0 && inputValue === '' && (
-          <p>Почніть вводити ім’я і виберіть зі списку</p>
+        {inputValue === '' && (
+          <p>
+            Почніть вводити ім’я і виберіть зі списку. Якщо автора не існує,
+            спочатку додайте його до бази
+          </p>
         )}
-        {isLoading && <p>Завантаження...</p>}
+        {isLoading && inputValue !== '' && <p>Завантаження...</p>}
       </div>
 
       <input

@@ -1,11 +1,23 @@
-.rating {
+.rating,
+.link {
   display: flex;
   align-items: center;
   gap: 5px;
   cursor: pointer;
   width: fit-content;
-  padding: 0.3em;
-  border-radius: 100%;
+  border-radius: 1rem;
+}
+
+.rating {
+  padding: 0.3rem 0.5rem;
+}
+.rating:hover {
+  background-color: rgb(65, 65, 65);
+}
+
+.link {
+  text-decoration: none;
+  color: var(--accent1);
 }
 
 .overlay {
@@ -18,6 +30,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 999;
 }
 
 .modal {
@@ -26,34 +39,67 @@
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
+  z-index: 1000;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg2);
+  border: 1px solid grey;
+  cursor: pointer;
+  color: grey;
+  border-radius: 50%;
+}
+
+.close-btn:hover {
+  color: var(--accent2);
 }
 
 .buttons {
   margin-top: 15px;
   display: flex;
   gap: 10px;
-  justify-content: center;
+  justify-content: space-around;
 }
 
-.cancel,
-.confirm {
+.confirm-btn,
+.delete-btn {
   border: none;
   border-radius: var(--border-radius);
   color: rgb(255, 255, 255);
   padding: 0.6rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  background: none;
+  transition: all 0.2s;
+  font-size: 1rem;
 }
 
-.cancel:hover,
-.confirm:hover {
-  transform: scale(105%);
+.confirm-btn:hover {
+  background-color: rgb(221, 221, 221);
+  color: var(--accent2);
 }
 
-.cancel {
-  background: gray;
-}
-
-.confirm {
+.confirm-btn {
   background: var(--accent2);
+  color: var(--accent1);
+}
+
+.delete-btn {
+  color: rgb(188, 188, 188);
+}
+
+.delete-btn:hover {
+  color: red;
+  background-color: rgb(77, 77, 77);
+}
+
+.stars {
+  display: flex;
+  flex-wrap: nowrap;
 }

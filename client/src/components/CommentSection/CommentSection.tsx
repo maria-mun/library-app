@@ -10,10 +10,13 @@ export default function CommentSection({ bookId }: { bookId: string }) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [sortOrder, setSortOrder] = useState<string>();
+  const { loadingUser } = useAuth();
 
   useEffect(() => {
-    fetchComments();
-  }, [sortOrder]);
+    if (!loadingUser) {
+      fetchComments();
+    }
+  }, [sortOrder, loadingUser]);
 
   const fetchComments = async () => {
     try {
@@ -152,7 +155,7 @@ function Comments({ comments, onCommentDeleted }: CommentsProps) {
                   className={styles['delete-my-comment-btn']}
                   onClick={() => setModalCommentId(com._id)}
                 >
-                  {userId === com.userId._id
+                  {userId === com.userId?._id
                     ? 'Видалити свій коментар'
                     : 'Видалити коментар'}
                 </button>

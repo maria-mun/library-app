@@ -20,34 +20,35 @@ export default function Header() {
           uLib
         </NavLink>
       </h1>
+      <div className={styles.nav}>
+        <NavLink to="/allBooks" className={styles.link}>
+          Книги
+        </NavLink>
+        <NavLink to="/allAuthors" className={styles.link}>
+          Автори
+        </NavLink>
 
-      <NavLink to="/allBooks" className={styles.link}>
-        Книги
-      </NavLink>
-      <NavLink to="/allAuthors" className={styles.link}>
-        Автори
-      </NavLink>
-
-      {user ? (
-        <ProfileMenu user={user} logoutUser={logoutUser} />
-      ) : (
-        <div className={styles['login-buttons']}>
-          <NavLink
-            to="/register"
-            state={{ from: location.pathname }}
-            className={styles.button + ' ' + styles['register-btn']}
-          >
-            Реєстрація
-          </NavLink>
-          <NavLink
-            to="/login"
-            state={{ from: location.pathname }}
-            className={styles.button + ' ' + styles['login-btn']}
-          >
-            Вхід
-          </NavLink>
-        </div>
-      )}
+        {user ? (
+          <ProfileMenu user={user} logoutUser={logoutUser} />
+        ) : (
+          <div className={styles['login-buttons']}>
+            <NavLink
+              to="/register"
+              state={{ from: location.pathname }}
+              className={styles.button + ' ' + styles['register-btn']}
+            >
+              Реєстрація
+            </NavLink>
+            <NavLink
+              to="/login"
+              state={{ from: location.pathname }}
+              className={styles.button + ' ' + styles['login-btn']}
+            >
+              Вхід
+            </NavLink>
+          </div>
+        )}
+      </div>
     </header>
   );
 }
@@ -89,12 +90,13 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
         }}
       >
         <AccountIcon />
-        {user.displayName}
+        <div className={styles.displayName}>{user.displayName}</div>
         <ArrowIcon isOpen={isOpen} />
       </div>
 
       {isOpen && (
         <div className={styles.dropdown}>
+          <div className={styles.displayName}>{user.displayName}</div>
           <NavLink
             to="/myProfile"
             className={styles['menu-option']}
@@ -102,7 +104,6 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
           >
             Профіль
           </NavLink>
-
           <NavLink
             to="/myLists"
             className={styles['menu-option']}
@@ -110,16 +111,6 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
           >
             Мої списки
           </NavLink>
-          <hr />
-          <button
-            onClick={handleLogout}
-            className={styles['logout-btn'] + ' ' + styles['menu-option']}
-          >
-            <LogoutIcon />
-            Вийти
-          </button>
-          <hr />
-
           <NavLink
             to="/addBookForm"
             className={styles['menu-option']}
@@ -133,7 +124,14 @@ function ProfileMenu({ user, logoutUser }: ProfileProps) {
             onClick={() => setIsOpen(false)}
           >
             Додати автора до бази даних
-          </NavLink>
+          </NavLink>{' '}
+          <button
+            onClick={handleLogout}
+            className={styles['logout-btn'] + ' ' + styles['menu-option']}
+          >
+            <LogoutIcon />
+            Вийти
+          </button>
         </div>
       )}
     </div>
@@ -145,7 +143,7 @@ function LogoutIcon() {
     <svg
       className={styles['logout-icon']}
       fill="currentColor"
-      width="1.1em"
+      height="1.1rem"
       viewBox="0 0 32 32"
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +156,6 @@ function LogoutIcon() {
         strokeLinejoin="round"
       ></g>
       <g id="SVGRepo_iconCarrier">
-        {' '}
         <path d="M3.651 16.989h17.326c0.553 0 1-0.448 1-1s-0.447-1-1-1h-17.264l3.617-3.617c0.391-0.39 0.391-1.024 0-1.414s-1.024-0.39-1.414 0l-5.907 6.062 5.907 6.063c0.196 0.195 0.451 0.293 0.707 0.293s0.511-0.098 0.707-0.293c0.391-0.39 0.391-1.023 0-1.414zM29.989 0h-17c-1.105 0-2 0.895-2 2v9h2.013v-7.78c0-0.668 0.542-1.21 1.21-1.21h14.523c0.669 0 1.21 0.542 1.21 1.21l0.032 25.572c0 0.668-0.541 1.21-1.21 1.21h-14.553c-0.668 0-1.21-0.542-1.21-1.21v-7.824l-2.013 0.003v9.030c0 1.105 0.895 2 2 2h16.999c1.105 0 2.001-0.895 2.001-2v-28c-0-1.105-0.896-2-2-2z"></path>{' '}
       </g>
     </svg>
@@ -170,8 +167,8 @@ function AccountIcon() {
     <svg
       className={styles['account-icon']}
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 100 100"
-      height="1.5em"
+      viewBox="0 0 90 90"
+      width="2rem"
       fill="currentColor"
     >
       <path d="M 45 0 C 20.147 0 0 20.147 0 45 c 0 24.853 20.147 45 45 45 s 45 -20.147 45 -45 C 90 20.147 69.853 0 45 0 z M 45 22.007 c 8.899 0 16.14 7.241 16.14 16.14 c 0 8.9 -7.241 16.14 -16.14 16.14 c -8.9 0 -16.14 -7.24 -16.14 -16.14 C 28.86 29.248 36.1 22.007 45 22.007 z M 45 83.843 c -11.135 0 -21.123 -4.885 -27.957 -12.623 c 3.177 -5.75 8.144 -10.476 14.05 -13.341 c 2.009 -0.974 4.354 -0.958 6.435 0.041 c 2.343 1.126 4.857 1.696 7.473 1.696 c 2.615 0 5.13 -0.571 7.473 -1.696 c 2.083 -1 4.428 -1.015 6.435 -0.041 c 5.906 2.864 10.872 7.591 14.049 13.341 C 66.123 78.957 56.135 83.843 45 83.843 z" />
@@ -182,6 +179,7 @@ function AccountIcon() {
 function ArrowIcon({ isOpen }: { isOpen: boolean }) {
   return (
     <svg
+      className={styles['arrow-icon']}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 123.958 123.959"
       transform={`rotate(${isOpen ? 270 : 90})`}

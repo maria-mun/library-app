@@ -16,8 +16,8 @@ router.get(
       .optional()
       .trim()
       .escape()
-      .isLength({ max: 30 })
-      .withMessage('Максимальна довжина пошукового запиту — 30 символів.'),
+      .isLength({ max: 100 })
+      .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -60,8 +60,8 @@ router.get(
       .optional()
       .trim()
       .escape()
-      .isLength({ max: 30 })
-      .withMessage('Максимальна довжина пошукового запиту — 30 символів.'),
+      .isLength({ max: 100 })
+      .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);

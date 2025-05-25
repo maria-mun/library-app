@@ -1,12 +1,25 @@
 import styles from './all-books.module.css';
 import { useState, useEffect } from 'react';
 import BookList from '../../components/BookList/BookList';
+import SearchIcon from '../../components/Icons/SearchIcon';
+import Select, { SelectOption } from '../../components/Select/Select';
+
+const sortOptions: SelectOption[] = [
+  { value: '', label: '- -' },
+  { value: 'title_asc', label: 'за назвою (А-Я)' },
+  { value: 'title_desc', label: 'за назвою (Я-А)' },
+  { value: 'year_asc', label: 'за роком (зростання)' },
+  { value: 'year_desc', label: 'за роком (спадання)' },
+];
 
 function AllBooksPage() {
   const [sort, setSort] = useState<string | undefined>(undefined);
   const [order, setOrder] = useState<string | undefined>(undefined);
-  const [searchValue, setSearchValue] = useState<string>('');
-  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const [searchValue, setSearchValue] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedSort, setSelectedSort] = useState<SelectOption>(
+    sortOptions[0]
+  );
   const [error, setError] = useState('');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -22,43 +35,56 @@ function AllBooksPage() {
     return () => clearTimeout(handler);
   }, [searchValue]);
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const [newSort, newOrder] = e.target.value.split('_');
-    setSort(newSort);
-    setOrder(newOrder);
+  const handleSortChange = (option: SelectOption | undefined) => {
+    setSelectedSort(option || sortOptions[0]);
+    if (option?.value) {
+      const [newSort, newOrder] = option.value.split('_');
+      setSort(newSort);
+      setOrder(newOrder);
+    } else {
+      setSort(undefined);
+      setOrder(undefined);
+    }
     setError('');
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.navigation}>
-        <h2 className={styles.title}>Усі книги</h2>
-        <div className={styles.filters}>
+      <h2 className={styles.title}>Усі книги</h2>
+
+      <div className={styles.filters}>
+        <div className={styles.search}>
+          <div className={styles['search-icon']}>
+            <SearchIcon size="1rem" />
+          </div>
+
           <input
-            className={styles.search}
+            className={styles.input}
             type="text"
             placeholder="Пошук"
             value={searchValue}
             onChange={handleSearchChange}
-            maxLength={30}
+            maxLength={100}
           />
-          <div>
-            <span>Сортувати:</span>
-            <select
-              onChange={handleSortChange}
-              defaultValue=""
-              className={styles.sort}
-            >
-              <option value="">- -</option>
-              <option value="title_asc">за назвою (А-Я)</option>
-              <option value="title_desc">за назвою (Я-А)</option>
-              <option value="year_asc">за роком (зростання)</option>
-              <option value="year_desc">за роком (спадання)</option>
-            </select>
-          </div>
+
+          <button
+            className={styles['clear-input-btn']}
+            onClick={() => setSearchValue('')}
+          >
+            &times;
+          </button>
         </div>
-        {error && <p>{error}</p>}
+        <div className={styles.sort}>
+          <span>Сортування:</span>
+          <Select
+            options={sortOptions}
+            value={selectedSort}
+            onChange={handleSortChange}
+          />
+        </div>
       </div>
+
+      {error && <p>{error}</p>}
 
       <BookList
         onError={setError}

@@ -7,26 +7,34 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal.tsx';
 import Loader from '../../components/Loader/Loader.tsx';
 const API_URL = import.meta.env.VITE_API_URL;
-
 function ProfilePage() {
   const { getFreshToken, user, loadingUser } = useAuth();
   const navigate = useNavigate();
 
-  const [confirmModalOpened, setConfirmModalOpened] = useState<boolean>(false);
-  const [editingName, setEditingName] = useState<boolean>(false);
+  const [confirmModalOpened, setConfirmModalOpened] = useState(false);
+  const [editingName, setEditingName] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+
   const [name, setName] = useState('');
   const [originalName, setOriginalName] = useState('');
 
+  const [email, setEmail] = useState('');
+  const [originalEmail, setOriginalEmail] = useState('');
+
   useEffect(() => {
     if (!loadingUser && user) {
-      setName(user.displayName || 'Анонім');
-      setOriginalName(user.displayName || 'Анонім');
+      const userName = user.displayName || 'Анонім';
+      setName(userName);
+      setOriginalName(userName);
+      setEmail(user.email || '');
+      setOriginalEmail(user.email || '');
     }
   }, [loadingUser, user]);
 
   const handleSaveNewName = async () => {
     const token = await getFreshToken();
     if (!token) return;
+
     try {
       await fetch(`${API_URL}/auth/updateName`, {
         method: 'PUT',
@@ -48,10 +56,36 @@ function ProfilePage() {
       });
     }
   };
+
+  const handleSaveNewEmail = async () => {
+    const token = await getFreshToken();
+    if (!token) return;
+
+    try {
+      await fetch(`${API_URL}/auth/updateEmail`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ newEmail: email }),
+      });
+      setOriginalEmail(email);
+      setEditingEmail(false);
+    } catch (error) {
+      console.error(error);
+      navigate('/error', {
+        state: {
+          code: 500,
+          message: 'Не вдалося оновити пошту. Спробуйте ще раз.',
+        },
+      });
+    }
+  };
+
   const handleDeleteProfile = async () => {
     const token = await getFreshToken();
     if (!token) return;
-    if (name.length < 2) return;
 
     try {
       const res = await fetch(`${API_URL}/auth/deleteMe`, {
@@ -78,11 +112,17 @@ function ProfilePage() {
     }
   };
 
+  const validateEmail = (email: string) => {
+    return !!email.match(/^([\w.%+-]+)@([\w-]+\.)+([\w]{2,})$/i);
+  };
+
   if (loadingUser) return <Loader />;
 
   return (
     <div>
       <div>Мій профіль</div>
+
+      {/* ІМ'Я */}
       {editingName ? (
         <div>
           <input
@@ -110,10 +150,38 @@ function ProfilePage() {
         </div>
       )}
 
-      <div className={styles.email}>{user?.email}</div>
+      {/* ЕЛЕКТРОННА ПОШТА */}
+      {editingEmail ? (
+        <div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button onClick={handleSaveNewEmail} disabled={!validateEmail(email)}>
+            Зберегти
+          </button>
+          <button
+            onClick={() => {
+              setEmail(originalEmail);
+              setEditingEmail(false);
+            }}
+          >
+            Скасувати
+          </button>
+        </div>
+      ) : (
+        <div>
+          <div className={styles.email}>{email}</div>
+          <button onClick={() => setEditingEmail(true)}>Змінити email</button>
+        </div>
+      )}
+
+      {/* ВИДАЛЕННЯ */}
       <button onClick={() => setConfirmModalOpened(true)}>
         Видалити профіль
       </button>
+
       {confirmModalOpened && (
         <ConfirmModal
           message="Впевнені, що хочете видалити свій профіль назавжди?"

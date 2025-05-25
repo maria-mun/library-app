@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import { useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { Link } from 'react-router-dom';
+import StarIcon from '../Icons/StarIcon';
+import XIcon from '../Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
 
 type RatingProps = {
@@ -23,7 +25,7 @@ export default function Rating({ bookId, currentRating }: RatingProps) {
   const { user } = useAuth();
   const ratingContent = (
     <>
-      <StarIcon filled={!!rating} />
+      <StarIcon filled={!!rating} color="skyblue" />
       <p>{rating ? rating : 'Оцінити'}</p>
     </>
   );
@@ -71,6 +73,8 @@ function RatingModal({
   const [newRating, setNewRating] = useState<number | null>(
     currentRating || null
   );
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+
   const { getFreshToken } = useAuth();
   const handleUpdateRating = async (rating: number | null) => {
     try {
@@ -99,35 +103,38 @@ function RatingModal({
       throw err;
     }
   };
-
+  const effectiveRating = hoverRating ?? newRating;
   return ReactDOM.createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <input
-          type="number"
-          max="10"
-          min="1"
-          value={newRating || ''}
-          onChange={(e) => {
-            const value = e.target.value ? parseInt(e.target.value) : null;
-            setNewRating(value);
-          }}
-        />
-
+        <button type="button" className={styles['close-btn']} onClick={onClose}>
+          <XIcon size={30} />
+        </button>
+        <div className={styles.stars}>
+          {[...Array(10)].map((_, i) => (
+            <StarIcon
+              key={i}
+              number={i + 1}
+              size={35}
+              filled={effectiveRating !== null && i < effectiveRating}
+              onMouseEnter={() => setHoverRating(i + 1)}
+              onMouseLeave={() => setHoverRating(null)}
+              color="skyblue"
+              onClick={() => setNewRating(i + 1)}
+            />
+          ))}
+        </div>
         <div className={styles.buttons}>
           <button
             onClick={() => handleUpdateRating(null)}
-            className={styles.delete}
+            className={styles['delete-btn']}
           >
             Видалити оцінку
-          </button>
-          <button onClick={onClose} className={styles.cancel}>
-            Скасувати
           </button>
 
           <button
             onClick={() => handleUpdateRating(newRating)}
-            className={styles.confirm}
+            className={styles['confirm-btn']}
           >
             Підтвердити
           </button>
@@ -135,23 +142,5 @@ function RatingModal({
       </div>
     </div>,
     document.body
-  );
-}
-
-function StarIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      fill={filled ? 'gold' : 'none'}
-      height="20"
-      width="20"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="1"
-      viewBox="0 0 24 24"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
   );
 }

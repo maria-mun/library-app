@@ -1,7 +1,10 @@
 import styles from './select.module.css';
 import { useState } from 'react';
 
-export type SelectOption = string;
+export type SelectOption = {
+  value: string;
+  label: string;
+};
 
 type SingleSelectProps = {
   multiple?: false;
@@ -33,32 +36,39 @@ const Select = ({ multiple, label, value, onChange, options }: SelectProps) => {
 
   function selectOption(option: SelectOption) {
     if (multiple) {
-      if (value.includes(option)) {
-        onChange(value.filter((o) => o !== option));
+      const selected = value as SelectOption[];
+      if (selected.some((o) => o.value === option.value)) {
+        onChange(selected.filter((o) => o.value !== option.value));
       } else {
-        onChange([...value, option]);
+        onChange([...selected, option]);
       }
     } else {
-      if (option !== value) onChange(option);
+      if ((value as SelectOption)?.value !== option.value) {
+        onChange(option);
+      }
     }
   }
 
   function isSelected(option: SelectOption) {
-    return multiple ? value.includes(option) : value === option;
+    if (multiple) {
+      return (value as SelectOption[]).some((o) => o.value === option.value);
+    }
+    return (value as SelectOption)?.value === option.value;
   }
 
   return (
     <div>
-      <div
-        className={`${styles.placeholder} ${
-          !value || (Array.isArray(value) && value.length === 0)
-            ? ''
-            : styles.label
-        }
-        `}
-      >
-        {label}
-      </div>
+      {label && (
+        <div
+          className={`${styles.placeholder} ${
+            !value || (Array.isArray(value) && value.length === 0)
+              ? ''
+              : styles.label
+          }`}
+        >
+          {label}
+        </div>
+      )}
       <div
         onBlur={() => {
           setIsOpen(false);
@@ -71,49 +81,53 @@ const Select = ({ multiple, label, value, onChange, options }: SelectProps) => {
       >
         <span className={styles.value}>
           {multiple
-            ? value.map((v) => (
+            ? (value as SelectOption[]).map((v) => (
                 <button
                   type="button"
-                  key={v}
+                  key={v.value}
                   className={styles['option-badge']}
                   onClick={(e) => {
                     e.stopPropagation();
                     selectOption(v);
                   }}
                 >
-                  {v}
+                  {v.label}
                   <span className={styles['remove-btn']}>&times;</span>
                 </button>
               ))
-            : value}
+            : (value as SelectOption)?.label}
         </span>
+        {multiple && (
+          <>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                clearSelected();
+              }}
+              type="button"
+              className={styles['clear-btn']}
+            >
+              &times;
+            </button>
+            <div className={styles.divider}></div>
+          </>
+        )}
 
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            clearSelected();
-          }}
-          type="button"
-          className={styles['clear-btn']}
-        >
-          &times;
-        </button>
-        <div className={styles.divider}></div>
         <div className={styles.caret}></div>
         <ul className={`${styles.options} ${isOpen ? styles.show : ''}`}>
           {options.map((option) => (
             <li
+              key={option.value}
               onClick={(e) => {
                 e.stopPropagation();
                 selectOption(option);
                 if (!multiple) setIsOpen(false);
               }}
-              key={option}
               className={`${styles.option} ${
                 isSelected(option) ? styles.selected : ''
               }`}
             >
-              {option}
+              {option.label}
             </li>
           ))}
         </ul>

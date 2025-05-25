@@ -1,13 +1,13 @@
 import { Request, Response, Router } from 'express';
-import { body, query, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 import { User } from '../models/User';
 import {
   verifyToken,
   decodeTokenOnly,
   deleteFirebaseUser,
   updateFirebaseName,
+  updateFirebaseEmail,
 } from '../middleware/authMiddleware';
-import { rateLimiter } from '../middleware/rateLimiter';
 
 const router = Router();
 
@@ -38,7 +38,7 @@ router.post(
     body('name')
       .trim()
       .escape()
-      .isLength({ min: 1, max: 20 })
+      .isLength({ min: 1 })
       .withMessage('Ім’я обовʼязкове і має бути до 20 символів'),
     body('email').isEmail().withMessage('Некоректна email адреса'),
   ],
@@ -116,6 +116,49 @@ router.put('/updateName', verifyToken, async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Помилка сервера' });
   }
 });
+
+router.put(
+  '/updateEmail',
+  verifyToken,
+  [
+    body('newEmail')
+      .isEmail()
+      .withMessage('Некоректна електронна адреса')
+      .normalizeEmail(),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ message: errors.array()[0].msg });
+      return;
+    }
+
+    const uid = req.user?.uid;
+    const { newEmail } = req.body;
+
+    try {
+      if (uid) {
+        await updateFirebaseEmail(uid, newEmail);
+      }
+
+      const user = await User.findOneAndUpdate(
+        { firebaseUid: uid },
+        { email: newEmail },
+        { new: true }
+      );
+
+      if (!user) {
+        res.status(404).json({ message: 'Користувача не знайдено' });
+        return;
+      }
+
+      res.status(200).json({ message: 'Електронну адресу оновлено', user });
+    } catch (err) {
+      console.error('Помилка оновлення email:', err);
+      res.status(500).json({ message: 'Помилка сервера' });
+    }
+  }
+);
 
 /* router.get(
   '/user-exists',

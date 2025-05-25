@@ -6,7 +6,6 @@
 }
 
 :root {
-  font-size: 16px;
   --border-radius: 5px;
   --accent2: #fd4b1f;
 }
@@ -22,14 +21,14 @@
   --bg2: rgb(22, 22, 22);
   --bg1: rgb(38, 38, 38);
   --accent1: rgb(255, 255, 255);
-
   --neutral: rgb(122, 122, 122);
 }
 
 body {
   background-color: var(--bg2);
   color: var(--accent1);
-  min-width: 400px;
+
+  font-size: 16px;
 }
 
 #root {
@@ -39,9 +38,28 @@ body {
 }
 main {
   flex: 1;
-  padding: 5rem 3rem 3rem;
+  padding: 5rem 1rem 1rem;
 }
 
 .asterisk {
   color: darkred;
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 18px;
+  }
+
+  main {
+    padding: 5rem 2rem 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    font-size: 20px;
+  }
+  main {
+    padding: 5rem 3rem 3rem;
+  }
 }

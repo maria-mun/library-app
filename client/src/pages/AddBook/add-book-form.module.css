@@ -1,26 +1,26 @@
 .form {
   position: relative;
-  margin: 4rem auto 6rem;
   display: flex;
+  gap: 0.5rem;
   flex-direction: column;
   align-content: center;
-  gap: 0.5em;
-  width: 22em;
-  background-color: var(--bg1);
+  max-width: 22em;
+  width: 100%;
+  margin: 4rem auto 6rem;
+  padding: 1rem;
   border-radius: 10px;
-  padding: 1em;
+  background-color: var(--bg1);
 }
 
 .heading {
+  margin-bottom: 0.5rem;
   color: var(--accent2);
-
-  margin-bottom: 0.5em;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 0.3em;
+  gap: 0.3rem;
 }
 
 .label {
@@ -29,8 +29,8 @@
 }
 
 .input {
-  padding: 0.5em;
-  border-radius: var(--border-radius);
+  padding: 0.5rem;
+  border-radius: 0.3rem;
   background-color: var(--bg2);
   border: none;
   color: var(--accent1);
@@ -43,15 +43,9 @@
   opacity: 0;
 }
 
-.input:focus + .label,
-.input:not(:placeholder-shown) + .label {
-  background-color: var(--bg1);
-  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
-}
-
 .input:focus,
 .input:focus-within {
-  outline: 2px solid var(--accent1);
+  outline: 1px solid var(--accent1);
 }
 
 .close-btn {
@@ -74,13 +68,15 @@
 
 .submit-btn {
   background: rgb(187, 67, 44);
-  margin: 1em 0;
+  margin: 1rem 0;
   border: none;
   border-radius: var(--border-radius);
   color: rgb(255, 255, 255);
   padding: 0.6rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
 }
 
 .submit-btn:hover {
@@ -91,7 +87,6 @@
 .submit-btn:disabled,
 .submit-btn:disabled:hover {
   background-color: var(--neutral);
-
   color: white;
   cursor: not-allowed;
 }

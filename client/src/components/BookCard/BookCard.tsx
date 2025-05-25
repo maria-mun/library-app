@@ -7,6 +7,7 @@ import Spinner from '../Spinner/Spinner';
 import { User } from 'firebase/auth';
 import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
+import StarIcon from '../Icons/StarIcon';
 import Rating from '../Rating/Rating';
 
 type Author = {
@@ -147,14 +148,19 @@ const BookCard = ({
 
   return (
     <div className={styles.book}>
-      <Link to={`/book/${book._id}`}>
-        <div className={styles.cover}>
-          <BookMarks activeLists={activeLists} />
-          {book.cover && (
-            <img src={book.cover} alt={`Обкладинка книги ${book.title}`}></img>
-          )}
-        </div>
-      </Link>
+      <div className={styles.left}>
+        <Link to={`/book/${book._id}`}>
+          <div className={styles.cover}>
+            <BookMarks activeLists={activeLists} />
+            {book.cover && (
+              <img
+                src={book.cover}
+                alt={`Обкладинка книги ${book.title}`}
+              ></img>
+            )}
+          </div>
+        </Link>
+      </div>
       <div className={styles.details}>
         <h2 className={styles.title}>
           <Link to={`/book/${book._id}`}>{book.title}</Link>
@@ -162,21 +168,28 @@ const BookCard = ({
         <p className={styles.author}>
           <Link to={`/author/${book.author._id}`}>{book.author.name}</Link>
         </p>
-        <span className={styles.country}>{book.author.country}</span>
-        <span className={styles.year}>{book.year}</span>
-        {book.averageRating != null
-          ? `Середня оцінка: ${book.averageRating.toFixed(1)} (${
-              book.ratingsCount
-            } оцінок)`
-          : 'Ще немає оцінок'}
-        <Rating
-          bookId={book._id}
-          currentRating={book.userData?.rating || null}
-        />
-        <div className={styles.genres}>
-          {book.genres?.map((genre, index) => (
-            <span key={index}>{genre}</span>
-          ))}
+        <div>
+          <span className={styles.year}>{book.year}</span>
+          <span> • </span>
+          <span className={styles.country}>{book.author.country}</span>
+        </div>
+        <div className={styles.rating}>
+          <StarIcon filled={true} />
+          {book.averageRating != null
+            ? `${book.averageRating.toFixed(1)} (${book.ratingsCount})`
+            : '0 (0)'}
+
+          <Rating
+            bookId={book._id}
+            currentRating={book.userData?.rating || null}
+          />
+        </div>
+        <div className={styles['genres-wrap']}>
+          <div className={styles.genres}>
+            {book.genres?.map((genre, index) => (
+              <span key={index}>{genre}</span>
+            ))}
+          </div>
         </div>
       </div>
       <div className={styles['options-cont']} ref={dropdownRef}>
@@ -214,15 +227,13 @@ const BookCard = ({
                   );
                 } else {
                   return (
-                    <li key={item.key} className={styles.option}>
-                      <Link
-                        to="/register"
-                        state={{ from: location.pathname }}
-                        className={styles.link}
-                      >
-                        {item.label}
-                      </Link>
-                    </li>
+                    <Link
+                      to="/register"
+                      state={{ from: location.pathname }}
+                      className={`${styles.option} ${styles.link}`}
+                    >
+                      {item.label}
+                    </Link>
                   );
                 }
               })}
@@ -240,15 +251,15 @@ const BookCard = ({
                 </li>
               )}
               {(role === 'admin' || role === 'user') && (
-                <li className={styles.option}>
+                <>
                   <Link
                     to={`/editBookForm/${book._id}`}
-                    className={styles.link}
+                    className={`${styles.option} ${styles.link}`}
                   >
                     Редагувати
+                    <EditIcon size={20} />
                   </Link>
-                  <EditIcon size={20} />
-                </li>
+                </>
               )}
             </ul>
           </div>

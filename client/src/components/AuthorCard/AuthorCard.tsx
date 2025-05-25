@@ -85,6 +85,7 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
 
   return (
     <div className={styles.author}>
+      {isFavorite && <span className={styles['fave-icon']}>✪</span>}
       <Link to={`/author/${author._id}`}>
         <div className={styles.photo}>
           {author.photo && (
@@ -97,17 +98,6 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
           <Link to={`/author/${author._id}`}>{author.name}</Link>
         </h2>
         <p className={styles.country}>{author.country}</p>
-        {user ? (
-          <div onClick={toggleFavorite}>
-            {isFavorite ? 'Видалити з улюблених' : 'Додати до улюблених'}
-          </div>
-        ) : (
-          <div>
-            <Link to="/register" state={{ from: location.pathname }}>
-              Додати до улюблених
-            </Link>
-          </div>
-        )}
       </div>
       <div className={styles['options-cont']} ref={dropdownRef}>
         <button
@@ -119,6 +109,19 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
         {isOpen && (
           <div className={styles.dropdown}>
             <ul className={styles['options-list']}>
+              {user ? (
+                <li onClick={toggleFavorite} className={styles.option}>
+                  {isFavorite ? 'Видалити з улюблених' : 'Додати до улюблених'}
+                </li>
+              ) : (
+                <Link
+                  to="/register"
+                  state={{ from: location.pathname }}
+                  className={`${styles.option} ${styles.link}`}
+                >
+                  Додати до улюблених
+                </Link>
+              )}
               {role === 'admin' && (
                 <li
                   className={styles.option}
@@ -132,15 +135,15 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
                 </li>
               )}
               {(role === 'admin' || role === 'user') && (
-                <li className={styles.option}>
+                <>
                   <Link
                     to={`/editAuthorForm/${author._id}`}
-                    className={styles.link}
+                    className={`${styles.option} ${styles.link}`}
                   >
                     Редагувати
+                    <BinIcon size={20} />
                   </Link>
-                  <BinIcon size={20} />
-                </li>
+                </>
               )}
             </ul>
           </div>

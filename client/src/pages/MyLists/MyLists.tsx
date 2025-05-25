@@ -1,78 +1,114 @@
 import styles from './my-lists.module.css';
 import { useState, useEffect } from 'react';
 import BookList from '../../components/BookList/BookList';
+import SearchIcon from '../../components/Icons/SearchIcon';
+import Select, { SelectOption } from '../../components/Select/Select';
+
+const lists = [
+  { key: 'allLists', label: 'Всі' },
+  { key: 'readBooks', label: 'Прочитано' },
+  { key: 'currentlyReadingBooks', label: 'Читаю' },
+  { key: 'plannedBooks', label: 'Планую' },
+  { key: 'abandonedBooks', label: 'Закинуто' },
+];
+
+const sortOptions: SelectOption[] = [
+  { value: '', label: '- -' },
+  { value: 'title_asc', label: 'за назвою (А-Я)' },
+  { value: 'title_desc', label: 'за назвою (Я-А)' },
+  { value: 'year_asc', label: 'за роком (зростання)' },
+  { value: 'year_desc', label: 'за роком (спадання)' },
+];
 
 function MyLists() {
-  const [sort, setSort] = useState<string | undefined>(undefined);
-  const [order, setOrder] = useState<string | undefined>(undefined);
-  const [searchValue, setSearchValue] = useState<string>('');
-  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-  const [activeList, setActiveList] = useState<string>('allLists');
+  const [sort, setSort] = useState<string>();
+  const [order, setOrder] = useState<string>();
+  const [searchValue, setSearchValue] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [selectedSort, setSelectedSort] = useState<SelectOption>(
+    sortOptions[0]
+  );
+  const [activeList, setActiveList] = useState('allLists');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(searchValue);
+    }, 500);
+    return () => clearTimeout(timeoutId);
+  }, [searchValue]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-    setError('');
+    if (error) setError('');
   };
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchValue);
-    }, 500);
+  const handleSortChange = (option: SelectOption | undefined) => {
+    setSelectedSort(option || sortOptions[0]);
 
-    return () => clearTimeout(handler);
-  }, [searchValue]);
+    if (option?.value) {
+      const [newSort, newOrder] = option.value.split('_');
+      setSort(newSort);
+      setOrder(newOrder);
+    } else {
+      setSort(undefined);
+      setOrder(undefined);
+    }
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const [newSort, newOrder] = e.target.value.split('_');
-    setSort(newSort);
-    setOrder(newOrder);
-    setError('');
+    if (error) setError('');
   };
 
   return (
     <div className={styles.container}>
-      <div className={styles.navigation}>
-        <h2 className={styles.title}>Мої списки</h2>
-        <div className={styles.lists}>
-          {lists.map((list) => (
-            <button
-              key={list.key}
-              className={`${styles['list-btn']} ${styles[list.key]} ${
-                activeList === list.key ? styles.active : ''
-              }`}
-              onClick={() => setActiveList(list.key)}
-            >
-              {list.label}
-            </button>
-          ))}
-        </div>
-        <div className={styles.filters}>
+      <h2 className={styles.title}>Мої списки</h2>
+
+      <div className={styles.lists}>
+        {lists.map(({ key, label }) => (
+          <button
+            key={key}
+            className={`${styles['list-btn']} ${styles[key]} ${
+              activeList === key ? styles.active : ''
+            }`}
+            onClick={() => setActiveList(key)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      <div className={styles.filters}>
+        <div className={styles.search}>
+          <div className={styles['search-icon']}>
+            <SearchIcon size="1rem" />
+          </div>
+
           <input
-            className={styles.search}
+            className={styles.input}
             type="text"
             placeholder="Пошук"
             value={searchValue}
             onChange={handleSearchChange}
-            maxLength={30}
+            maxLength={100}
           />
-          <div>
-            <span>Сортувати:</span>
-            <select
-              onChange={handleSortChange}
-              defaultValue=""
-              className={styles.sort}
-            >
-              <option value="">- -</option>
-              <option value="title_asc">за назвою (А-Я)</option>
-              <option value="title_desc">за назвою (Я-А)</option>
-              <option value="year_asc">за роком (зростання)</option>
-              <option value="year_desc">за роком (спадання)</option>
-            </select>
-          </div>
+
+          <button
+            className={styles['clear-input-btn']}
+            onClick={() => setSearchValue('')}
+          >
+            &times;
+          </button>
         </div>
-        {error && <p>{error}</p>}
+        <div className={styles.sort}>
+          <span>Сортування:</span>
+          <Select
+            options={sortOptions}
+            value={selectedSort}
+            onChange={handleSortChange}
+          />
+        </div>
       </div>
+
+      {error && <p className={styles.error}>{error}</p>}
 
       <BookList
         onError={setError}
@@ -86,11 +122,3 @@ function MyLists() {
 }
 
 export default MyLists;
-
-const lists = [
-  { key: 'allLists', label: 'Всі' },
-  { key: 'readBooks', label: 'Прочитано' },
-  { key: 'currentlyReadingBooks', label: 'Читаю' },
-  { key: 'plannedBooks', label: 'Планую' },
-  { key: 'abandonedBooks', label: 'Закинуто' },
-];

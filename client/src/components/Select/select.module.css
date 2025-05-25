@@ -1,13 +1,15 @@
 .container {
   position: relative;
   width: 100%;
-  min-height: 2.5em;
+  min-width: 10rem;
+  min-height: 2.5rem;
   border-radius: var(--border-radius);
   background-color: var(--bg2);
   color: var(--accent1);
-  padding: 0.5em;
+  padding: 0.5rem;
   display: flex;
-  gap: 0.5em;
+  gap: 0.5rem;
+  border: var(--border);
 }
 
 .container:focus {
@@ -81,7 +83,7 @@
 .options {
   list-style: none;
   display: none;
-  max-height: 10em;
+  max-height: 10rem;
   overflow: auto;
   border-radius: var(--border-radius);
   border: 1px solid var(--accent1);
@@ -101,6 +103,7 @@
 .option {
   padding: 0.5em;
   cursor: pointer;
+  font-size: 1rem;
 }
 
 .option.selected {

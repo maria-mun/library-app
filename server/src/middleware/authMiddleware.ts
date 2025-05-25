@@ -83,3 +83,7 @@ export const updateFirebaseName = async (uid: string, newName: string) => {
     displayName: newName,
   });
 };
+
+export async function updateFirebaseEmail(uid: string, newEmail: string) {
+  await getAuth().updateUser(uid, { email: newEmail });
+}
