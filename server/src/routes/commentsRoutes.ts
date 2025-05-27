@@ -36,8 +36,10 @@ router.get('/book/:bookId', async (req: Request, res: Response) => {
 router.post(
   '/add',
   verifyToken,
-  body('text').trim().isLength({ min: 1, max: 1000 }).escape(),
-  body('bookId').isMongoId(),
+  [
+    body('text').isString().trim().notEmpty().isLength({ max: 1000 }),
+    body('bookId').isMongoId(),
+  ],
   async (req: Request, res: Response) => {
     try {
       const errors = validationResult(req);

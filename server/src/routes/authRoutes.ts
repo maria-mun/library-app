@@ -14,7 +14,9 @@ const router = Router();
 router.get('/me', verifyToken, async (req: Request, res: Response) => {
   try {
     const firebaseUid = req.user?.uid;
-    const user = await User.findOne({ firebaseUid });
+    const user = await User.findOne({ firebaseUid }).select(
+      '_id role ratedBooks readBooks plannedBooks currentlyReadingBooks abandonedBooks favoriteAuthors'
+    );
 
     if (!user) {
       res
@@ -23,7 +25,16 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
       return;
     }
 
-    res.json({ user, role: user.role });
+    const counts = {
+      ratedBooks: user.ratedBooks.length,
+      readBooks: user.readBooks.length,
+      plannedBooks: user.plannedBooks.length,
+      currentlyReadingBooks: user.currentlyReadingBooks.length,
+      abandonedBooks: user.abandonedBooks.length,
+      favoriteAuthors: user.favoriteAuthors.length,
+    };
+
+    res.json({ userId: user._id, role: user.role, counts });
   } catch (err) {
     res
       .status(500)
@@ -36,10 +47,11 @@ router.post(
   decodeTokenOnly,
   [
     body('name')
+      .isString()
       .trim()
-      .escape()
-      .isLength({ min: 1 })
-      .withMessage('Ім’я обовʼязкове і має бути до 20 символів'),
+      .notEmpty()
+      .isLength({ max: 30 })
+      .withMessage('Ім’я обовʼязкове і має бути до 30 символів'),
     body('email').isEmail().withMessage('Некоректна email адреса'),
   ],
   async (req: Request, res: Response) => {
@@ -89,33 +101,47 @@ router.delete('/deleteMe', verifyToken, async (req: Request, res: Response) => {
   }
 });
 
-router.put('/updateName', verifyToken, async (req: Request, res: Response) => {
-  const uid = req.user?.uid;
-  const { newName } = req.body;
-  try {
-    if (!newName || newName.trim().length < 2) {
-      res.status(400).json({ message: 'Некоректне ім’я' });
+router.put(
+  '/updateName',
+  verifyToken,
+  [
+    body('newName')
+      .isString()
+      .trim()
+      .notEmpty()
+      .isLength({ max: 30 })
+      .withMessage('Ім’я обовʼязкове і має бути до 30 символів'),
+  ],
+
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
       return;
     }
 
-    if (uid) await updateFirebaseName(uid, newName);
+    const uid = req.user?.uid;
+    const { newName } = req.body;
+    try {
+      if (uid) await updateFirebaseName(uid, newName);
 
-    const user = await User.findOneAndUpdate(
-      { firebaseUid: uid },
-      { name: newName },
-      { new: true }
-    );
+      const user = await User.findOneAndUpdate(
+        { firebaseUid: uid },
+        { name: newName },
+        { new: true }
+      );
 
-    if (!user) {
-      res.status(404).json({ message: 'Користувача не знайдено' });
-      return;
+      if (!user) {
+        res.status(404).json({ message: 'Користувача не знайдено' });
+        return;
+      }
+      res.status(200).json({ message: 'Ім’я оновлено', user });
+    } catch (err) {
+      console.error('Помилка оновлення імені:', err);
+      res.status(500).json({ message: 'Помилка сервера' });
     }
-    res.status(200).json({ message: 'Ім’я оновлено', user });
-  } catch (err) {
-    console.error('Помилка оновлення імені:', err);
-    res.status(500).json({ message: 'Помилка сервера' });
   }
-});
+);
 
 router.put(
   '/updateEmail',
@@ -159,33 +185,5 @@ router.put(
     }
   }
 );
-
-/* router.get(
-  '/user-exists',
-  [
-    query('email')
-      .trim()
-      .normalizeEmail()
-      .isEmail()
-      .withMessage('Некоректна email адреса'),
-  ],
-  async (req: Request, res: Response) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({ errors: errors.array() });
-      return;
-    }
-
-    const { email } = req.query;
-
-    try {
-      const user = await User.findOne({ email });
-      res.json({ exists: !!user });
-    } catch (error) {
-      console.error('Помилка при перевірці email:', error);
-      res.status(500).json({ exists: false, message: 'Помилка сервера' });
-    }
-  }
-); */
 
 export default router;

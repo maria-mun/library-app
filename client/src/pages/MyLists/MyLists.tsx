@@ -29,7 +29,6 @@ function MyLists() {
     sortOptions[0]
   );
   const [activeList, setActiveList] = useState('allLists');
-  const [error, setError] = useState('');
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -40,7 +39,6 @@ function MyLists() {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-    if (error) setError('');
   };
 
   const handleSortChange = (option: SelectOption | undefined) => {
@@ -54,8 +52,6 @@ function MyLists() {
       setSort(undefined);
       setOrder(undefined);
     }
-
-    if (error) setError('');
   };
 
   return (
@@ -108,10 +104,7 @@ function MyLists() {
         </div>
       </div>
 
-      {error && <p className={styles.error}>{error}</p>}
-
       <BookList
-        onError={setError}
         sort={sort}
         order={order}
         search={debouncedSearch}

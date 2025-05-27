@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import styles from './add-author.module.css';
 import XIcon from '../../components/Icons/XIcon';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AddAuthorForm = () => {
@@ -10,6 +11,7 @@ const AddAuthorForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const { getFreshToken } = useAuth();
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
@@ -19,6 +21,8 @@ const AddAuthorForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setModalError(null);
+
     const authorData = {
       name: name.trim(),
       country,
@@ -28,6 +32,7 @@ const AddAuthorForm = () => {
 
     try {
       const token = await getFreshToken();
+
       const response = await fetch(`${API_URL}/authors/add`, {
         method: 'POST',
         headers: {
@@ -39,25 +44,17 @@ const AddAuthorForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error(errorData.message || 'Помилка при додаванні автора.');
       }
 
       setSuccessMessage('Автора/-ку успішно додано!');
       setTimeout(() => navigate('/allAuthors'), 2000);
     } catch (error) {
-      console.log(error);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка при додаванні автора.'
+      );
     } finally {
       setLoading(false);
     }
@@ -100,6 +97,7 @@ const AddAuthorForm = () => {
           type="text"
           id={styles.name}
           name="name"
+          maxLength={100}
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -115,6 +113,7 @@ const AddAuthorForm = () => {
           type="text"
           id={styles.country}
           name="country"
+          maxLength={50}
           value={country}
           onChange={(e) => setCountry(e.target.value)}
         />
@@ -129,6 +128,7 @@ const AddAuthorForm = () => {
           type="text"
           id={styles.description}
           name="description"
+          maxLength={1000}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -154,6 +154,12 @@ const AddAuthorForm = () => {
       >
         {loading ? <span className={styles.spinner}></span> : 'Додати'}
       </button>
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </form>
   );
 };

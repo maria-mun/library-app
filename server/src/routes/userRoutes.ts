@@ -45,7 +45,7 @@ router.post(
           { $pull: { [list]: { bookId } } },
           { new: true }
         );
-        res.json({ message: 'Book removed from list', user: updatedUser });
+        res.json({ status: 'removed' });
         return;
       } else {
         updatedUser = await User.findOneAndUpdate(
@@ -53,7 +53,7 @@ router.post(
           { $addToSet: { [list]: { bookId } } },
           { new: true }
         );
-        res.json({ message: 'Book added to list', user: updatedUser });
+        res.json({ status: 'added' });
         return;
       }
     } catch (err) {

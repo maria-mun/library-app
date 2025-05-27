@@ -14,8 +14,8 @@ router.get(
   [
     query('search')
       .optional()
+      .isString()
       .trim()
-      .escape()
       .isLength({ max: 100 })
       .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
   ],
@@ -58,8 +58,8 @@ router.get(
   [
     query('search')
       .optional()
+      .isString()
       .trim()
-      .escape()
       .isLength({ max: 100 })
       .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
   ],
@@ -225,11 +225,11 @@ router.get(
 
 const validateBookData = [
   body('title')
+    .isString()
     .trim()
-    .escape()
     .notEmpty()
     .withMessage('Назва книги обовʼязкова')
-    .isLength({ max: 150 })
+    .isLength({ max: 100 })
     .withMessage('Назва занадто довга'),
 
   body('author')
@@ -243,6 +243,8 @@ const validateBookData = [
     .isInt({ max: new Date().getFullYear() })
     .withMessage('Рік має бути не більше поточного')
     .toInt(),
+
+  body('cover').optional({ checkFalsy: true }).isString().trim(),
 ];
 
 router.post(

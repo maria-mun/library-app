@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
+import Spinner from '../Spinner/Spinner';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 const API_URL = import.meta.env.VITE_API_URL;
 
 type Author = {
@@ -35,6 +37,8 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
   const [isFavorite, setIsFavorite] = useState(author.isFavorite);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, role, getFreshToken } = useAuth();
+  const [loadingToggle, setLoadingToggle] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -53,10 +57,10 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
   }, []);
 
   const toggleFavorite = async () => {
-    const token = await getFreshToken();
-    const prevFavorite = isFavorite;
-    setIsFavorite(!prevFavorite);
+    setLoadingToggle(true);
+
     try {
+      const token = await getFreshToken();
       const res = await fetch(`${API_URL}/users/favoriteAuthors`, {
         method: 'POST',
         headers: {
@@ -67,19 +71,23 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
       });
 
       if (!res.ok) {
-        throw new Error('Не вдалося оновити улюблених авторів');
+        throw new Error(
+          'Виникла помилка. Не вдалося оновити улюблених авторів.'
+        );
       }
 
       const data = await res.json();
       const status = data.status;
 
-      const shouldBeFavorite = status === 'added';
-      if (shouldBeFavorite !== !prevFavorite) {
-        // якщо стан розсинхронізувався — оновлюємо вручну
-        setIsFavorite(shouldBeFavorite);
-      }
-    } catch (err) {
-      console.error('Помилка при оновленні улюблених авторів:', err);
+      setIsFavorite(status === 'added');
+    } catch (error) {
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка. Не вдалося оновити улюблених авторів'
+      );
+    } finally {
+      setLoadingToggle(false);
     }
   };
 
@@ -110,8 +118,16 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
           <div className={styles.dropdown}>
             <ul className={styles['options-list']}>
               {user ? (
-                <li onClick={toggleFavorite} className={styles.option}>
+                <li
+                  onClick={() => !loadingToggle && toggleFavorite()}
+                  style={{
+                    cursor: loadingToggle ? 'not-allowed' : 'pointer',
+                    opacity: loadingToggle ? 0.5 : 1,
+                  }}
+                  className={styles.option}
+                >
                   {isFavorite ? 'Видалити з улюблених' : 'Додати до улюблених'}
+                  {loadingToggle && <Spinner />}
                 </li>
               ) : (
                 <Link
@@ -149,6 +165,12 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
           </div>
         )}
       </div>
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </div>
   );
 };

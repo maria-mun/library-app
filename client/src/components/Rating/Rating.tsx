@@ -3,6 +3,8 @@ import ReactDOM from 'react-dom';
 import { useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { Link } from 'react-router-dom';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
+
 import StarIcon from '../Icons/StarIcon';
 import XIcon from '../Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -74,11 +76,16 @@ function RatingModal({
     currentRating || null
   );
   const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const { getFreshToken } = useAuth();
   const handleUpdateRating = async (rating: number | null) => {
+    setIsLoading(true);
+    setModalError(null);
     try {
       const token = await getFreshToken();
+
       const res = await fetch(`${API_URL}/users/rating`, {
         method: 'POST',
         headers: {
@@ -91,16 +98,19 @@ function RatingModal({
 
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(
-          errorData.error || 'Не вдалося оновити/видалити оцінку'
-        );
+        throw new Error(errorData.message || 'Не вдалося оновити оцінку.');
       }
       onUpdateRating(rating);
       onClose();
       return await res.json();
-    } catch (err) {
-      console.error('Помилка при оновленні оцінки:', err);
-      throw err;
+    } catch (error) {
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка. Не вдалося оновити оцінку.'
+      );
+    } finally {
+      setIsLoading(false);
     }
   };
   const effectiveRating = hoverRating ?? newRating;
@@ -128,6 +138,11 @@ function RatingModal({
           <button
             onClick={() => handleUpdateRating(null)}
             className={styles['delete-btn']}
+            disabled={isLoading}
+            style={{
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.5 : 1,
+            }}
           >
             Видалити оцінку
           </button>
@@ -135,11 +150,22 @@ function RatingModal({
           <button
             onClick={() => handleUpdateRating(newRating)}
             className={styles['confirm-btn']}
+            disabled={isLoading}
+            style={{
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.5 : 1,
+            }}
           >
             Підтвердити
           </button>
         </div>
       </div>
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </div>,
     document.body
   );

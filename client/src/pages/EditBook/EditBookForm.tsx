@@ -5,6 +5,8 @@ import Select, { SelectOption } from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
 import XIcon from '../../components/Icons/XIcon';
 import Spinner from '../../components/Spinner/Spinner';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+
 const API_URL = import.meta.env.VITE_API_URL;
 import { useAuth } from '../../AuthContext';
 
@@ -68,6 +70,7 @@ const EditBookForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const { getFreshToken } = useAuth();
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [genres, setGenres] = useState<SelectOption[]>([]);
   const [title, setTitle] = useState('');
@@ -79,15 +82,19 @@ const EditBookForm = () => {
     const fetchBook = async () => {
       try {
         const res = await fetch(`${API_URL}/books/public/${bookId}`);
-        if (!res.ok) throw new Error('Не вдалося отримати книгу');
+        if (!res.ok) throw new Error('Не вдалося отримати дані про книгу.');
         const data: Book = await res.json();
         setTitle(data.title);
         setYear(data.year);
         setCover(data.cover);
         setAuthor(data.author);
         setGenres(data.genres.map((genre) => ({ label: genre, value: genre })));
-      } catch (err) {
-        console.error('Помилка при завантаженні книги:', err);
+      } catch (error) {
+        setModalError(
+          error instanceof Error
+            ? error.message
+            : 'Не вдалося отримати дані про книгу.'
+        );
       }
     };
 
@@ -97,6 +104,7 @@ const EditBookForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setModalError(null);
 
     const bookData = {
       title,
@@ -119,24 +127,17 @@ const EditBookForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error(errorData.message || 'Помилка при оновленні книги.');
       }
       setSuccessMessage('Книгу оновлено!');
       setTimeout(() => navigate(-1), 2000);
     } catch (error) {
       console.log(error);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка при оновленні книги.'
+      );
     } finally {
       setLoading(false);
     }
@@ -175,6 +176,7 @@ const EditBookForm = () => {
           className={styles.input}
           type="text"
           id="title"
+          maxLength={100}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           required
@@ -225,6 +227,13 @@ const EditBookForm = () => {
       >
         {loading ? <Spinner /> : 'Оновити'}
       </button>
+
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </form>
   );
 };

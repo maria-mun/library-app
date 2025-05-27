@@ -6,6 +6,7 @@ import Select, { SelectOption } from '../../components/Select/Select';
 import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/AuthorAutocompleteInput';
 import XIcon from '../../components/Icons/XIcon';
 import Spinner from '../../components/Spinner/Spinner';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -59,6 +60,7 @@ const AddBookForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const { getFreshToken } = useAuth();
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [genres, setGenres] = useState<SelectOption[]>([]);
   const [title, setTitle] = useState('');
@@ -69,6 +71,7 @@ const AddBookForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setModalError(null);
 
     const bookData = {
       title,
@@ -91,25 +94,18 @@ const AddBookForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error(errorData.message || 'Помилка при додаванні книги.');
       }
 
       setSuccessMessage('Книгу успішно додано!');
       setTimeout(() => navigate('/allBooks'), 2000);
     } catch (error) {
       console.log(error);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка при додаванні книги.'
+      );
     } finally {
       setLoading(false);
     }
@@ -151,6 +147,7 @@ const AddBookForm = () => {
           id={styles.title}
           name="title"
           placeholder="Назва книги"
+          maxLength={100}
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -205,6 +202,12 @@ const AddBookForm = () => {
       >
         {loading ? <Spinner /> : 'Додати'}
       </button>
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </form>
   );
 };

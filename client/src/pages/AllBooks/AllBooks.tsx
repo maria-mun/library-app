@@ -6,6 +6,8 @@ import Select, { SelectOption } from '../../components/Select/Select';
 
 const sortOptions: SelectOption[] = [
   { value: '', label: '- -' },
+  { value: 'averageRating_asc', label: 'за рейтингом (зростання)' },
+  { value: 'averageRating_desc', label: 'за рейтингом (спадання)' },
   { value: 'title_asc', label: 'за назвою (А-Я)' },
   { value: 'title_desc', label: 'за назвою (Я-А)' },
   { value: 'year_asc', label: 'за роком (зростання)' },
@@ -20,11 +22,9 @@ function AllBooksPage() {
   const [selectedSort, setSelectedSort] = useState<SelectOption>(
     sortOptions[0]
   );
-  const [error, setError] = useState('');
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
-    setError('');
   };
 
   useEffect(() => {
@@ -45,7 +45,6 @@ function AllBooksPage() {
       setSort(undefined);
       setOrder(undefined);
     }
-    setError('');
   };
 
   return (
@@ -84,14 +83,7 @@ function AllBooksPage() {
         </div>
       </div>
 
-      {error && <p>{error}</p>}
-
-      <BookList
-        onError={setError}
-        sort={sort}
-        order={order}
-        search={debouncedSearch}
-      />
+      <BookList sort={sort} order={order} search={debouncedSearch} />
     </div>
   );
 }

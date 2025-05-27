@@ -11,6 +11,7 @@ export default function CommentSection({ bookId }: { bookId: string }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [sortOrder, setSortOrder] = useState<string>();
   const { loadingUser } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loadingUser) {
@@ -19,15 +20,24 @@ export default function CommentSection({ bookId }: { bookId: string }) {
   }, [sortOrder, loadingUser]);
 
   const fetchComments = async () => {
+    setError(null);
     try {
       setLoading(true);
-      const res = await fetch(
+      const response = await fetch(
         `${API_URL}/comments/book/${bookId}?sort=${sortOrder}`
       );
-      const data = await res.json();
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Помилка при завантаженні коментарів.');
+      }
       setComments(data);
-    } catch {
-      console.error('Не вдалося завантажити коментарі');
+    } catch (error) {
+      setError(
+        error instanceof Error
+          ? error.message
+          : 'Помилка при завантаженні коментарів.'
+      );
     } finally {
       setLoading(false);
     }
@@ -54,6 +64,10 @@ export default function CommentSection({ bookId }: { bookId: string }) {
       <CommentInput bookId={bookId} onCommentAdded={fetchComments} />
       {loading ? (
         <Loader />
+      ) : error ? (
+        <div className={styles.container}>
+          <p className={styles.error}>{error}</p>
+        </div>
       ) : (
         <Comments comments={comments} onCommentDeleted={fetchComments} />
       )}
@@ -79,8 +93,7 @@ type CommentsProps = {
 function Comments({ comments, onCommentDeleted }: CommentsProps) {
   const { userId, role, getFreshToken } = useAuth();
   const [modalCommentId, setModalCommentId] = useState<string | null>(null);
-
-  const navigate = useNavigate();
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
@@ -93,25 +106,16 @@ function Comments({ comments, onCommentDeleted }: CommentsProps) {
         },
       });
       if (!response.ok) {
-        const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error('Виникла помилка при видаленні коментаря.');
       }
       onCommentDeleted();
       setModalCommentId(null);
-    } catch (err) {
-      console.log(err);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+    } catch (error) {
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка при видаленні коментаря.'
+      );
     }
   };
 
@@ -166,9 +170,15 @@ function Comments({ comments, onCommentDeleted }: CommentsProps) {
       })}
       {modalCommentId && (
         <ConfirmModal
-          message="Ви впевнені, що хочете видалити свій коментар?"
+          message="Ви впевнені, що хочете видалити цей коментар?"
           onClose={() => setModalCommentId(null)}
           onConfirm={() => handleDelete(modalCommentId)}
+        />
+      )}
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
         />
       )}
     </div>

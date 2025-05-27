@@ -19,6 +19,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { user, getFreshToken } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,12 +50,15 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
         method: 'GET',
         headers,
       });
-
-      if (!response.ok) throw new Error('Помилка при отриманні авторів');
       const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.message || 'Помилка при отриманні авторів');
+
       setAuthors(data || []);
-    } catch (err) {
-      console.error('Помилка:', err);
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : 'Помилка при отриманні авторів'
+      );
       setAuthors([]);
     } finally {
       setIsLoading(false);
@@ -67,6 +71,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
     onChange(null);
     setIsOpen(true);
     setIsLoading(true);
+    setError(null);
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -103,6 +108,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
           type="text"
           id="author"
           required
+          maxLength={100}
           aria-required="true"
           value={inputValue}
           onChange={handleInputChange}
@@ -138,16 +144,17 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
           </ul>
         )}
 
-        {!isLoading && authors.length === 0 && inputValue !== '' && (
+        {!isLoading && authors.length === 0 && inputValue !== '' && !error && (
           <p>Нічого не знайдено</p>
         )}
-        {inputValue === '' && (
+        {inputValue === '' && !error && (
           <p>
             Почніть вводити ім’я і виберіть зі списку. Якщо автора не існує,
             спочатку додайте його до бази
           </p>
         )}
         {isLoading && inputValue !== '' && <p>Завантаження...</p>}
+        {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>
 
       <input

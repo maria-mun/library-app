@@ -4,7 +4,7 @@ import styles from './confirm-modal.module.css';
 type ConfirmModalProps = {
   message: string;
   onConfirm?: () => void;
-  onClose: () => void;
+  onClose?: () => void;
 };
 
 export default function ConfirmModal({
@@ -18,8 +18,9 @@ export default function ConfirmModal({
         <h2>{message}</h2>
         <div className={styles.buttons}>
           <button onClick={onClose} className={styles.cancel}>
-            Скасувати
+            {onConfirm ? 'Скасувати' : 'Закрити'}
           </button>
+
           {onConfirm && (
             <button onClick={onConfirm} className={styles.confirm}>
               Підтвердити

@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from './author-detail.module.css';
 import BookList from '../../components/BookList/BookList';
+import Select, { SelectOption } from '../../components/Select/Select';
+import AuthorCard from '../../components/AuthorCard/AuthorCard';
+const API_URL = import.meta.env.VITE_API_URL;
+
 type Author = {
   _id: string;
   name: string;
@@ -21,68 +25,78 @@ type Book = {
   genres?: string[];
 };
 
+const sortOptions: SelectOption[] = [
+  { value: '', label: '- -' },
+  { value: 'averageRating_asc', label: 'за рейтингом (зростання)' },
+  { value: 'averageRating_desc', label: 'за рейтингом (спадання)' },
+  { value: 'title_asc', label: 'за назвою (А-Я)' },
+  { value: 'title_desc', label: 'за назвою (Я-А)' },
+  { value: 'year_asc', label: 'за роком (зростання)' },
+  { value: 'year_desc', label: 'за роком (спадання)' },
+];
+
 const AuthorDetail = () => {
   const [author, setAuthor] = useState<Author | null>(null);
   const { id } = useParams<{ id: string }>();
-
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [sort, setSort] = useState<string | undefined>(undefined);
   const [order, setOrder] = useState<string | undefined>(undefined);
+  const [selectedSort, setSelectedSort] = useState<SelectOption>(
+    sortOptions[0]
+  );
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const [newSort, newOrder] = e.target.value.split('_');
-    setSort(newSort);
-    setOrder(newOrder);
+  const handleSortChange = (option: SelectOption | undefined) => {
+    setSelectedSort(option || sortOptions[0]);
+    if (option?.value) {
+      const [newSort, newOrder] = option.value.split('_');
+      setSort(newSort);
+      setOrder(newOrder);
+    } else {
+      setSort(undefined);
+      setOrder(undefined);
+    }
   };
 
   useEffect(() => {
     const fetchAuthor = async () => {
+      setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:4000/api/authors/${id}`);
+        const response = await fetch(`${API_URL}/authors/${id}`);
         const data = await response.json();
         setAuthor(data);
       } catch (error) {
         console.error('Error fetching author details:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchAuthor();
   }, [id]);
 
-  if (!author) {
+  if (isLoading) {
     return <p>Loading...</p>;
   }
 
   return (
-    <>
-      <div className={styles.author}>
-        <div className={styles.photo}>
-          {author.photo && (
-            <img src={author.photo} alt={`Фото автора - ${author.name}`}></img>
-          )}
-        </div>
-
-        <div className={styles.details}>
-          <h2 className={styles.name}>{author.name}</h2>
-          <p className={styles.country}>{author.country}</p>
-          <p className={styles.description}>{author.description}</p>
-        </div>
-        <div>
-          <span>Сортувати:</span>
-          <select
-            onChange={handleSortChange}
-            defaultValue=""
-            className={styles.sort}
-          >
-            <option value="">- -</option>
-            <option value="title_asc">за назвою (А-Я)</option>
-            <option value="title_desc">за назвою (Я-А)</option>
-            <option value="year_asc">за роком (зростання)</option>
-            <option value="year_desc">за роком (спадання)</option>
-          </select>
-        </div>
+    <div className={styles.container}>
+      <AuthorCard
+        author={author}
+        onDelete={() => {
+          // Handle author deletion logic here
+          console.log('Author deleted');
+        }}
+      />
+      <div className={styles.sort}>
+        <span>Сортування:</span>
+        <Select
+          options={sortOptions}
+          value={selectedSort}
+          onChange={handleSortChange}
+        />
       </div>
       <BookList sort={sort} order={order} authorId={id} />
-    </>
+    </div>
   );
 };
 

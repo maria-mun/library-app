@@ -1,3 +1,4 @@
+3;
 import express from 'express';
 import { Author } from '../models/Author';
 import { User } from '../models/User';
@@ -13,10 +14,10 @@ router.get(
   [
     query('search')
       .optional()
+      .isString()
       .trim()
-      .escape()
-      .isLength({ max: 30 })
-      .withMessage('Максимальна довжина пошукового запиту — 30 символів.'),
+      .isLength({ max: 100 })
+      .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -67,24 +68,41 @@ router.get(
   }
 );
 
-router.get('/public', async (req: Request, res: Response) => {
-  try {
-    const searchQuery = req.query.search;
-    let authors;
-    if (searchQuery) {
-      authors = await Author.find({
-        name: { $regex: searchQuery, $options: 'i' },
-      }).select('_id name');
-    } else {
-      authors = await Author.find();
+router.get(
+  '/public',
+  [
+    query('search')
+      .optional()
+      .isString()
+      .trim()
+      .isLength({ max: 100 })
+      .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
+  ],
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ message: errors.array()[0].msg });
+      return;
     }
-    res.json(authors);
-  } catch (error) {
-    res.status(500).json({
-      error: 'Щось пішло не так при отриманні авторів. Спробуйте ще раз.',
-    });
+
+    try {
+      const searchQuery = req.query.search;
+      let authors;
+      if (searchQuery) {
+        authors = await Author.find({
+          name: { $regex: searchQuery, $options: 'i' },
+        }).select('_id name');
+      } else {
+        authors = await Author.find();
+      }
+      res.json(authors);
+    } catch (error) {
+      res.status(500).json({
+        error: 'Щось пішло не так при отриманні авторів. Спробуйте ще раз.',
+      });
+    }
   }
-});
+);
 
 //зробити окремо public і authorized коли буду робити сторінку для автора
 router.get('/:id', async (req: Request, res: Response) => {
@@ -101,26 +119,27 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 const authorValidation = [
   body('name')
+    .isString()
     .trim()
     .notEmpty()
     .withMessage("Ім'я обов'язкове")
     .isLength({ max: 100 })
-    .withMessage("Ім'я має бути не довше 100 символів")
-    .escape(),
+    .withMessage("Ім'я має бути не довше 100 символів"),
 
   body('country')
     .optional({ checkFalsy: true })
+    .isString()
     .trim()
     .isLength({ max: 50 })
-    .withMessage('Назва країни має бути не довше 50 символів')
-    .escape(),
+    .withMessage('Назва країни має бути не довше 50 символів'),
 
   body('description')
     .optional({ checkFalsy: true })
+    .isString()
     .trim()
     .isLength({ max: 1000 })
-    .withMessage('Опис має бути не довше 1000 символів')
-    .escape(),
+    .withMessage('Опис має бути не довше 1000 символів'),
+  body('photo').optional({ checkFalsy: true }).isString().trim(),
 ];
 
 router.post(

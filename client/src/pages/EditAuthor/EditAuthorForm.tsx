@@ -4,6 +4,8 @@ import { useAuth } from '../../AuthContext';
 import styles from './edit-author-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
 import Spinner from '../../components/Spinner/Spinner';
+import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface Author {
@@ -19,6 +21,7 @@ const EditAuthorForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
   const { getFreshToken } = useAuth();
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [name, setName] = useState('');
   const [country, setCountry] = useState('');
@@ -36,8 +39,12 @@ const EditAuthorForm = () => {
         setCountry(data.country || '');
         setDescription(data.description || '');
         setPhoto(data.photo || '');
-      } catch (err) {
-        console.error('Помилка при завантаженні автора:', err);
+      } catch (error) {
+        setModalError(
+          error instanceof Error
+            ? error.message
+            : 'Не вдалося отримати дані автора.'
+        );
       }
     };
 
@@ -47,6 +54,8 @@ const EditAuthorForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setModalError(null);
+
     const authorData = {
       name: name.trim(),
       country,
@@ -67,24 +76,16 @@ const EditAuthorForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error(errorData.message || 'Помилка при оновленні автора.');
       }
       setSuccessMessage('Автора/-ку успішно оновлено!');
       setTimeout(() => navigate('/allAuthors'), 2000);
-    } catch (err) {
-      console.error(err);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+    } catch (error) {
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка при оновленні автора.'
+      );
     } finally {
       setLoading(false);
     }
@@ -113,7 +114,7 @@ const EditAuthorForm = () => {
       >
         <XIcon size={30} />
       </button>
-      <h2 className={styles.heading}>Редагувати дані про автора</h2>
+      <h2 className={styles.heading}>Редагувати дані автора</h2>
       <p>
         Обов'язкові поля позначені зірочкою <span className="asterisk">*</span>
       </p>
@@ -127,6 +128,7 @@ const EditAuthorForm = () => {
           type="text"
           id={styles.name}
           name="name"
+          maxLength={100}
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -142,6 +144,7 @@ const EditAuthorForm = () => {
           type="text"
           id={styles.country}
           name="country"
+          maxLength={50}
           value={country}
           onChange={(e) => setCountry(e.target.value)}
         />
@@ -156,6 +159,7 @@ const EditAuthorForm = () => {
           type="text"
           id={styles.description}
           name="description"
+          maxLength={1000}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
@@ -181,6 +185,12 @@ const EditAuthorForm = () => {
       >
         {loading ? <Spinner /> : 'Оновити'}
       </button>
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </form>
   );
 };

@@ -1,6 +1,5 @@
 import styles from './booklist.module.css';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BookCard from '../BookCard/BookCard';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
@@ -32,22 +31,16 @@ type BooksProps = {
   order?: string;
   search?: string;
   list?: string;
-  onError: (errorMessage: string) => void;
 };
 
-function BookList({
-  authorId,
-  sort,
-  order,
-  search,
-  list,
-  onError,
-}: BooksProps) {
+function BookList({ authorId, sort, order, search, list }: BooksProps) {
   const [books, setBooks] = useState<Book[]>([]);
   const [modalBookId, setModalBookId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { user, role, loadingUser, getFreshToken } = useAuth();
-  const navigate = useNavigate();
+
+  const [error, setError] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loadingUser) {
@@ -57,6 +50,7 @@ function BookList({
 
   const fetchBooks = async () => {
     setIsLoading(true);
+    setError(null);
 
     try {
       let url = `${API_URL}/books/${user ? 'authorized' : 'public'}`;
@@ -99,13 +93,14 @@ function BookList({
       const data = await response.json();
 
       if (!response.ok) {
-        onError(data.message);
+        throw new Error(data.message || 'Помилка при завантаженні книг');
       }
 
       setBooks(data);
     } catch (error) {
-      console.error(error);
-      onError("Не вдалося зв'язатися з сервером. Спробуйте ще раз.");
+      setError(
+        error instanceof Error ? error.message : 'Помилка при завантаженні книг'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -123,37 +118,42 @@ function BookList({
       });
       if (!response.ok) {
         const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error(errorData.message || 'Не вдалося видалити книгу.');
       }
       fetchBooks();
       setModalBookId(null);
-    } catch (err) {
-      console.log(err);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+    } catch (error) {
+      setModalError(
+        error instanceof Error ? error.message : 'Не вдалося видалити книгу.'
+      );
     }
   };
 
   if (isLoading) {
     return <Loader />;
   }
-
-  if (search && books.length === 0) {
-    return <p>Книг за вашим запитом не знайдено.</p>;
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <p className={styles.error}>{error}</p>
+      </div>
+    );
   }
 
-  if (books.length === 0) {
-    return <p>Книг поки немає.</p>;
+  if (search && books.length === 0) {
+    return (
+      <div className={styles.container}>
+        <p>Книг за вашим запитом не знайдено.</p>
+      </div>
+    );
+  }
+
+  if (!isLoading && books.length === 0) {
+    return (
+      <div className={styles.container}>
+        <p>Книг поки немає.</p>
+      </div>
+    );
   }
 
   return (
@@ -175,6 +175,12 @@ function BookList({
           message="Ви впевнені, що хочете видалити цю книгу?"
           onClose={() => setModalBookId(null)}
           onConfirm={() => handleDelete(modalBookId)}
+        />
+      )}
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
         />
       )}
     </>

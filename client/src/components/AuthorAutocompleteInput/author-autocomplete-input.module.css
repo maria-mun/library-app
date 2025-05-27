@@ -111,3 +111,7 @@
 .input:disabled {
   color: var(--neutral);
 }
+
+.error {
+  color: red;
+}

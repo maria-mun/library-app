@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL;
 import styles from './book-card.module.css';
 import { useState, useEffect, useRef } from 'react';
@@ -9,6 +9,7 @@ import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
 import StarIcon from '../Icons/StarIcon';
 import Rating from '../Rating/Rating';
+import ConfirmModal from '../ConfirmModal/ConfirmModal';
 
 type Author = {
   _id: string;
@@ -56,7 +57,8 @@ const BookCard = ({
   const [loadingListKey, setLoadingListKey] = useState<string | null>(null);
   const { getFreshToken, role } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
+
+  const [modalError, setModalError] = useState<string | null>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -77,13 +79,6 @@ const BookCard = ({
     if (loadingListKey) return;
     setLoadingListKey(list);
 
-    // optimistic update
-    const alreadyInList = activeLists.includes(list);
-    const newLists = alreadyInList
-      ? activeLists.filter((l) => l !== list)
-      : [...activeLists, list];
-    setActiveLists(newLists);
-
     try {
       const token = await getFreshToken();
       if (!token) throw new Error('No token available');
@@ -98,49 +93,28 @@ const BookCard = ({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error('Виникла помилка. Не вдалося оновити списки книг.');
       }
 
       const data = await response.json();
       const status = data.status;
-
-      // якщо сервер каже, що насправді не те зробилось — фіксимо
-      if (
-        (status === 'added' && alreadyInList) ||
-        (status === 'removed' && !alreadyInList)
-      ) {
-        setActiveLists(
-          alreadyInList
-            ? [...activeLists, list]
-            : activeLists.filter((l) => l !== list)
-        );
-      }
-
-      if (isList) {
-        onRemovalFromMyList();
-      }
-    } catch (err) {
-      console.error(err);
+      console.log(status);
 
       setActiveLists(
-        alreadyInList
+        status === 'added'
           ? [...activeLists, list]
           : activeLists.filter((l) => l !== list)
       );
 
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+      if (isList) {
+        onRemovalFromMyList();
+      }
+    } catch (error) {
+      setModalError(
+        error instanceof Error
+          ? error.message
+          : 'Виникла помилка. Не вдалося оновити списки книг.'
+      );
     } finally {
       setLoadingListKey(null);
     }
@@ -265,6 +239,12 @@ const BookCard = ({
           </div>
         )}
       </div>
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
+        />
+      )}
     </div>
   );
 };
