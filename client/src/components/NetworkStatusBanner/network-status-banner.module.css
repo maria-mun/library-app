@@ -1,0 +1,25 @@
+.offlineBanner {
+  background-color: #d32f2f;
+  color: white;
+  text-align: center;
+  padding: 0.3rem;
+  font-weight: bold;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 11111;
+}
+
+.onlineBanner {
+  background-color: #388e3c;
+  color: white;
+  text-align: center;
+  padding: 0.3rem;
+  font-weight: bold;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 11111;
+}

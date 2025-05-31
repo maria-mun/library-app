@@ -18,6 +18,7 @@ import MyLists from './pages/MyLists/MyLists';
 import EditBookForm from './pages/EditBook/EditBookForm';
 import EditAuthorForm from './pages/EditAuthor/EditAuthorForm';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
+import NetworkStatusBanner from '../src/components/NetworkStatusBanner/NetworkStatusBanner';
 
 const router = createBrowserRouter([
   {
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <NetworkStatusBanner />
     <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
