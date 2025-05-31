@@ -93,7 +93,6 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
 
   return (
     <div className={styles.author}>
-      {isFavorite && <span className={styles['fave-icon']}>✪</span>}
       <Link to={`/author/${author._id}`}>
         <div className={styles.photo}>
           {author.photo && (
@@ -103,41 +102,44 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
       </Link>
       <div className={styles.details}>
         <h2 className={styles.name}>
-          <Link to={`/author/${author._id}`}>{author.name}</Link>
+          <Link to={`/author/${author._id}`}>{author.name}</Link>{' '}
+          {isFavorite && <span className={styles['fave-icon']}>✪</span>}
         </h2>
         <p className={styles.country}>{author.country}</p>
+        {user ? (
+          <button
+            onClick={() => !loadingToggle && toggleFavorite()}
+            style={{
+              cursor: loadingToggle ? 'not-allowed' : 'pointer',
+            }}
+            className={styles['fave-btn']}
+          >
+            {isFavorite ? 'Видалити з улюблених' : 'Додати до улюблених'}
+            {loadingToggle && <Spinner />}
+          </button>
+        ) : (
+          <Link
+            to="/register"
+            state={{ from: location.pathname }}
+            className={`${styles['fave-btn']} ${styles.link}`}
+          >
+            Додати до улюблених
+          </Link>
+        )}
       </div>
       <div className={styles['options-cont']} ref={dropdownRef}>
-        <button
-          className={styles['options-btn']}
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          ⋮
-        </button>
+        {user && (
+          <button
+            className={styles['options-btn']}
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            ⋮
+          </button>
+        )}
+
         {isOpen && (
           <div className={styles.dropdown}>
             <ul className={styles['options-list']}>
-              {user ? (
-                <li
-                  onClick={() => !loadingToggle && toggleFavorite()}
-                  style={{
-                    cursor: loadingToggle ? 'not-allowed' : 'pointer',
-                    opacity: loadingToggle ? 0.5 : 1,
-                  }}
-                  className={styles.option}
-                >
-                  {isFavorite ? 'Видалити з улюблених' : 'Додати до улюблених'}
-                  {loadingToggle && <Spinner />}
-                </li>
-              ) : (
-                <Link
-                  to="/register"
-                  state={{ from: location.pathname }}
-                  className={`${styles.option} ${styles.link}`}
-                >
-                  Додати до улюблених
-                </Link>
-              )}
               {role === 'admin' && (
                 <li
                   className={styles.option}
@@ -147,7 +149,7 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
                   }}
                 >
                   Видалити з бази даних
-                  <EditIcon size={35} />
+                  <BinIcon size={35} />
                 </li>
               )}
               {(role === 'admin' || role === 'user') && (
@@ -157,7 +159,7 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
                     className={`${styles.option} ${styles.link}`}
                   >
                     Редагувати
-                    <BinIcon size={20} />
+                    <EditIcon size={20} />
                   </Link>
                 </>
               )}

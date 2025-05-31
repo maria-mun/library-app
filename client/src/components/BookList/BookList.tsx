@@ -4,6 +4,7 @@ import BookCard from '../BookCard/BookCard';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
 import { useAuth } from '../../AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -41,6 +42,8 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
 
   const [error, setError] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!loadingUser) {
@@ -120,8 +123,10 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Не вдалося видалити книгу.');
       }
+
       fetchBooks();
       setModalBookId(null);
+      if (authorId) navigate(0);
     } catch (error) {
       setModalError(
         error instanceof Error ? error.message : 'Не вдалося видалити книгу.'

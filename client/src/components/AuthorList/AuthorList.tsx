@@ -11,7 +11,8 @@ type Author = {
   name: string;
   country?: string;
   books?: Book[];
-  isFavorite?: boolean;
+  isFavorite: boolean;
+  hasBooks: boolean;
 };
 
 type Book = {
@@ -42,7 +43,6 @@ function AuthorList({ search }: AuthorProps) {
     if (!loadingUser) {
       fetchAuthors();
     }
-    console.log('authors fetched');
   }, [loadingUser, search]);
 
   const fetchAuthors = async () => {
@@ -143,7 +143,7 @@ function AuthorList({ search }: AuthorProps) {
               author={author}
               key={author._id}
               onDelete={() => {
-                if (author.books && author.books.length > 0) {
+                if (author.hasBooks) {
                   setModalAuthorId('can not be deleted');
                 } else {
                   setModalAuthorId(author._id);

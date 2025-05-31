@@ -30,8 +30,8 @@
 .details {
   display: flex;
   flex-direction: column;
-  /*  justify-content: space-between; */
-  gap: 1em;
+  justify-content: space-between;
+
   flex-grow: 1;
 }
 
@@ -56,13 +56,32 @@
 }
 
 .fave-icon {
-  position: absolute;
   color: gold;
-  font-size: 1.5rem;
-  line-height: 1.5rem;
+  font-size: 1.2rem;
+  line-height: 1.2rem;
   top: 0.3rem;
   left: 0.3rem;
 }
+
+.fave-btn {
+  background: var(--bg1);
+  border: 1px solid var(--neutral);
+  color: var(--neutral);
+  font-size: 0.9rem;
+  border-radius: 4px;
+  padding: 0.3rem 0.5rem;
+  width: fit-content;
+  display: flex;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fave-btn:hover {
+  color: var(--accent1);
+  border: 1px solid var(--accent1);
+}
+
 .country {
   color: var(--neutral);
 }
@@ -114,8 +133,7 @@
   gap: 0.2em;
 }
 
-.option,
-.link {
+.option {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -134,5 +152,4 @@
 
 .link {
   text-decoration: none;
-  color: var(--accent1);
 }

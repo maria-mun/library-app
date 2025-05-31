@@ -2,6 +2,7 @@
 import express from 'express';
 import { Author } from '../models/Author';
 import { User } from '../models/User';
+import { Book } from '../models/Book';
 import { Request, Response } from 'express';
 import { verifyToken } from '../middleware/authMiddleware';
 import { query, body, validationResult } from 'express-validator';
@@ -36,7 +37,21 @@ router.get(
         filter.name = { $regex: searchQuery, $options: 'i' };
       }
 
-      const authors = await Author.find(filter);
+      const authors = await Author.find(filter).select(
+        '_id name country description photo'
+      );
+
+      const authorIds = authors.map((a) => a._id);
+
+      // Отримуємо кількість книг на кожного автора
+      const bookCounts = await Book.aggregate([
+        { $match: { author: { $in: authorIds } } },
+        { $group: { _id: '$author', count: { $sum: 1 } } },
+      ]);
+
+      const bookCountMap = new Map(
+        bookCounts.map((item) => [item._id.toString(), item.count])
+      );
 
       let favAuthorIds: string[] = [];
 
@@ -52,9 +67,11 @@ router.get(
 
       const result = authors.map((author) => {
         const authorObj = author.toObject();
+        const idStr = author._id.toString();
         return {
           ...authorObj,
-          isFavorite: favAuthorIds.includes(author._id.toString()),
+          isFavorite: favAuthorIds.includes(idStr),
+          hasBooks: bookCountMap.has(idStr),
         };
       });
 
@@ -91,9 +108,11 @@ router.get(
       if (searchQuery) {
         authors = await Author.find({
           name: { $regex: searchQuery, $options: 'i' },
-        }).select('_id name');
+        }).select('_id name country description photo');
       } else {
-        authors = await Author.find();
+        authors = await Author.find().select(
+          '_id name country description photo'
+        );
       }
       res.json(authors);
     } catch (error) {
@@ -104,18 +123,61 @@ router.get(
   }
 );
 
-//зробити окремо public і authorized коли буду робити сторінку для автора
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/public/:id', async (req: Request, res: Response) => {
   const authorId = req.params.id;
   try {
     const author = await Author.findById(authorId);
     res.status(200).json(author);
   } catch (error) {
     res.status(500).json({
-      error: 'Щось пішло не так при отриманні автора. Спробуйте ще раз.',
+      message: 'Щось пішло не так при отриманні автора. Спробуйте ще раз.',
     });
   }
 });
+
+router.get(
+  '/authorized/:id',
+  verifyToken,
+  async (req: Request, res: Response) => {
+    const authorId = req.params.id;
+    const firebaseUid = req.user?.uid;
+
+    try {
+      const author = await Author.findById(authorId).lean();
+
+      if (!author) {
+        res.status(404).json({ message: 'Автор не знайдений.' });
+        return;
+      }
+
+      let isFavorite = false;
+
+      if (firebaseUid) {
+        const user = await User.findOne({ firebaseUid });
+
+        if (user) {
+          isFavorite = user.favoriteAuthors.some(
+            (item) => item.authorId.toString() === authorId
+          );
+        }
+      }
+
+      // Перевірка наявності книг
+      const hasBooks = await Book.exists({ author: authorId });
+
+      res.status(200).json({
+        ...author,
+        isFavorite,
+        hasBooks: Boolean(hasBooks),
+      });
+    } catch (error) {
+      console.error('Помилка при отриманні автора:', error);
+      res.status(500).json({
+        error: 'Щось пішло не так при отриманні автора. Спробуйте ще раз.',
+      });
+    }
+  }
+);
 
 const authorValidation = [
   body('name')

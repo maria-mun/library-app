@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../AuthContext';
 import styles from './add-book-form.module.css';
 import Select, { SelectOption } from '../../components/Select/Select';
@@ -56,6 +56,9 @@ interface Author {
 }
 
 const AddBookForm = () => {
+  const location = useLocation();
+  const state = location.state as { authorId?: string; authorName?: string };
+
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
@@ -66,7 +69,11 @@ const AddBookForm = () => {
   const [title, setTitle] = useState('');
   const [year, setYear] = useState('');
   const [cover, setCover] = useState('');
-  const [author, setAuthor] = useState<Author | null>(null);
+  const [author, setAuthor] = useState<Author | null>(
+    state?.authorId && state?.authorName
+      ? { _id: state.authorId, name: state.authorName }
+      : null
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -98,7 +105,7 @@ const AddBookForm = () => {
       }
 
       setSuccessMessage('Книгу успішно додано!');
-      setTimeout(() => navigate('/allBooks'), 2000);
+      setTimeout(() => navigate(-1), 2000);
     } catch (error) {
       console.log(error);
       setModalError(

@@ -45,6 +45,12 @@ main {
   color: darkred;
 }
 
+hr {
+  border: none;
+  border-bottom: 1px solid var(--neutral);
+  margin: 1rem 0;
+}
+
 @media (min-width: 768px) {
   body {
     font-size: 18px;

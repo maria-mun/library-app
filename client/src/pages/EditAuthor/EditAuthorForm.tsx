@@ -8,19 +8,12 @@ import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-interface Author {
-  name: string;
-  country: string;
-  description: string;
-  photo: string;
-}
-
 const EditAuthorForm = () => {
   const { authorId } = useParams<{ authorId: string }>();
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
-  const { getFreshToken } = useAuth();
+  const { user, getFreshToken } = useAuth();
   const [modalError, setModalError] = useState<string | null>(null);
 
   const [name, setName] = useState('');
@@ -31,9 +24,23 @@ const EditAuthorForm = () => {
   useEffect(() => {
     const fetchAuthor = async () => {
       try {
-        const res = await fetch(`${API_URL}/authors/${authorId}`);
-        if (!res.ok) throw new Error('Не вдалося отримати дані автора');
-        const data: Author = await res.json();
+        const url = `${API_URL}/authors/${
+          user ? 'authorized' : 'public'
+        }/${authorId}`;
+
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+
+        if (user) {
+          const token = await getFreshToken();
+          headers.Authorization = `Bearer ${token}`;
+        }
+        const response = await fetch(url, {
+          method: 'GET',
+          headers,
+        });
+        const data = await response.json();
 
         setName(data.name);
         setCountry(data.country || '');
@@ -79,7 +86,7 @@ const EditAuthorForm = () => {
         throw new Error(errorData.message || 'Помилка при оновленні автора.');
       }
       setSuccessMessage('Автора/-ку успішно оновлено!');
-      setTimeout(() => navigate('/allAuthors'), 2000);
+      setTimeout(() => navigate(-1), 2000);
     } catch (error) {
       setModalError(
         error instanceof Error
