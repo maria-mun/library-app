@@ -15,7 +15,7 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
   try {
     const firebaseUid = req.user?.uid;
     const user = await User.findOne({ firebaseUid }).select(
-      '_id role ratedBooks readBooks plannedBooks currentlyReadingBooks abandonedBooks favoriteAuthors'
+      '_id role photo ratedBooks readBooks plannedBooks currentlyReadingBooks abandonedBooks favoriteAuthors'
     );
 
     if (!user) {
@@ -34,7 +34,7 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
       favoriteAuthors: user.favoriteAuthors.length,
     };
 
-    res.json({ userId: user._id, role: user.role, counts });
+    res.json({ userId: user._id, role: user.role, photo: user.photo, counts });
   } catch (err) {
     res
       .status(500)
@@ -181,6 +181,41 @@ router.put(
       res.status(200).json({ message: 'Електронну адресу оновлено', user });
     } catch (err) {
       console.error('Помилка оновлення email:', err);
+      res.status(500).json({ message: 'Помилка сервера' });
+    }
+  }
+);
+
+router.put(
+  '/updatePhoto',
+  verifyToken,
+  [body('newPhotoUrl').isString()],
+
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({ errors: errors.array() });
+      return;
+    }
+
+    const uid = req.user?.uid;
+    const { newPhotoUrl } = req.body;
+
+    try {
+      const user = await User.findOneAndUpdate(
+        { firebaseUid: uid },
+        { photo: newPhotoUrl },
+        { new: true }
+      );
+
+      if (!user) {
+        res.status(404).json({ message: 'Користувача не знайдено' });
+        return;
+      }
+
+      res.status(200).json({ message: 'Фото оновлено', user });
+    } catch (err) {
+      console.error('Помилка оновлення фото:', err);
       res.status(500).json({ message: 'Помилка сервера' });
     }
   }

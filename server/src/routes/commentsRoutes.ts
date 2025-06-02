@@ -21,7 +21,7 @@ router.get('/book/:bookId', async (req: Request, res: Response) => {
     const comments = await Comment.find({ bookId })
       .populate({
         path: 'userId',
-        select: 'name',
+        select: 'name photo',
         options: { strictPopulate: false },
       })
       .sort({ createdAt: sort });

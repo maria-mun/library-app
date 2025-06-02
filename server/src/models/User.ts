@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   firebaseUid: { type: String, required: true, unique: true },
   role: { type: String, enum: ['admin', 'user'], default: 'user' },
+  photo: { type: String },
 
   ratedBooks: [
     {
