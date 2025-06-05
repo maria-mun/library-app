@@ -1,17 +1,156 @@
+.sort {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  --border: 1px solid var(--neutral);
+  margin: 1rem 0 1rem auto;
+}
+
+.sort > div {
+  flex: 1;
+}
+
+@media (min-width: 500px) {
+  .sort {
+    width: 18rem;
+  }
+}
+
+.comment-input {
+  margin: 1rem 0;
+}
+
+/* commentInput.module.css */
+.textarea {
+  width: 100%;
+  min-height: 3rem;
+  max-height: 300px;
+  resize: vertical;
+  overflow-y: auto;
+  line-height: 1.5;
+  font-size: 1rem;
+  padding: 0.5rem;
+  background-color: var(--bg2);
+  color: var(--accent1);
+  border-radius: 1rem;
+  border: 1px solid var(--neutral);
+
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.textarea:focus {
+  border-color: var(--accent1);
+  outline: none;
+}
+
+.button {
+  background-color: var(--bg2);
+  border: none;
+  border-radius: 5px;
+  color: var(--accent1);
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: var(--bg1);
+}
+.send-btn {
+  background-color: var(--bg1);
+  margin-left: auto;
+}
+
+.send-btn:hover {
+  background-color: var(--accent2);
+}
+
+.send-btn:disabled {
+  color: var(--neutral);
+  cursor: default;
+}
+
+.send-btn:disabled:hover {
+  background-color: var(--bg1);
+}
+
 .comments {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: 1rem;
   width: clamp(380px, 100%, 800px);
 }
 
 .comment {
-  padding: 1em;
+  padding: 0.5rem 0;
   border-bottom: 1px solid rgb(70, 70, 70);
+}
+.top {
+  display: flex;
+}
+
+.left {
+  flex-shrink: 0;
+  width: 85px;
+}
+.user-photo {
+  background: url('../../assets/img-placeholder.svg') center / cover no-repeat;
+  width: 70px;
+  height: 70px;
+
+  overflow: hidden;
+  position: relative;
+  border-radius: 999px;
+}
+
+.user-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.user-name {
+  font-size: 0.8rem;
+  color: var(--accent1);
+}
+
+.user-name.current {
+  color: var(--accent2);
 }
 
 .text {
   white-space: pre-line;
+  font-size: 1rem;
+  margin: 1rem 0;
+}
+
+.user-photo.deleted {
+  background: url('../../assets/img-placeholder.svg') center / cover no-repeat;
+}
+
+.bottom {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 0.5rem;
+}
+
+.bottom > span {
+  color: var(--neutral);
+  font-size: 0.9rem;
+}
+
+.delete-com-btn {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
 }
 
 .container {

@@ -14,9 +14,7 @@ const router = Router();
 router.get('/me', verifyToken, async (req: Request, res: Response) => {
   try {
     const firebaseUid = req.user?.uid;
-    const user = await User.findOne({ firebaseUid }).select(
-      '_id role photo ratedBooks readBooks plannedBooks currentlyReadingBooks abandonedBooks favoriteAuthors'
-    );
+    const user = await User.findOne({ firebaseUid }).select('_id role photo');
 
     if (!user) {
       res
@@ -25,16 +23,7 @@ router.get('/me', verifyToken, async (req: Request, res: Response) => {
       return;
     }
 
-    const counts = {
-      ratedBooks: user.ratedBooks.length,
-      readBooks: user.readBooks.length,
-      plannedBooks: user.plannedBooks.length,
-      currentlyReadingBooks: user.currentlyReadingBooks.length,
-      abandonedBooks: user.abandonedBooks.length,
-      favoriteAuthors: user.favoriteAuthors.length,
-    };
-
-    res.json({ userId: user._id, role: user.role, photo: user.photo, counts });
+    res.json({ userId: user._id, role: user.role, photo: user.photo });
   } catch (err) {
     res
       .status(500)

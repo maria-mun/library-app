@@ -50,7 +50,7 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
         method: 'GET',
         headers,
       });
-      const data = await response.json();
+      const { data } = await response.json();
       if (!response.ok)
         throw new Error(data.message || 'Помилка при отриманні авторів');
 

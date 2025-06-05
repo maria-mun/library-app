@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import AuthorCard from '../../components/AuthorCard/AuthorCard';
 import Loader from '../../components/Loader/Loader';
+import LoadMoreButton from '../LoadMore/LoadMore';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -39,18 +40,28 @@ function AuthorList({ search }: AuthorProps) {
   const [error, setError] = useState<string | null>(null);
   const [modalError, setModalError] = useState<string | null>(null);
 
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 3;
+
   useEffect(() => {
     if (!loadingUser) {
-      fetchAuthors();
+      setPage(0);
+      fetchAuthors(0, true);
     }
   }, [loadingUser, search]);
 
-  const fetchAuthors = async () => {
+  const fetchAuthors = async (pageToLoad = 0, reset = false) => {
     setIsLoading(true);
     setError(null);
     try {
-      const url = `${API_URL}/authors/${user ? 'authorized' : 'public'}${
-        search ? `?search=${encodeURIComponent(search)}` : ''
+      /* await new Promise((res) => setTimeout(res, 3000)); */
+      const url = `${API_URL}/authors/${
+        user ? 'authorized' : 'public'
+      }?offset=${pageToLoad * limit}&limit=${limit}${
+        search ? `&search=${encodeURIComponent(search)}` : ''
       }`;
 
       const headers: HeadersInit = {
@@ -65,12 +76,23 @@ function AuthorList({ search }: AuthorProps) {
         method: 'GET',
         headers,
       });
-      const data = await response.json();
+      const { data, totalCount } = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || 'Помилка при завантаженні авторів.');
       }
-      setAuthors(data);
+
+      if (search) {
+        setTotalCount(totalCount);
+      }
+
+      if (reset) {
+        setAuthors(data);
+      } else {
+        setAuthors((prev) => [...prev, ...data]);
+      }
+
+      setHasMore((pageToLoad + 1) * limit < totalCount);
     } catch (error) {
       setError(
         error instanceof Error
@@ -80,6 +102,12 @@ function AuthorList({ search }: AuthorProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchAuthors(nextPage);
   };
 
   const handleDelete = async (id: string) => {
@@ -97,7 +125,10 @@ function AuthorList({ search }: AuthorProps) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Не вдалося видалити автора.');
       }
-      fetchAuthors();
+
+      setPage(0);
+      fetchAuthors(0, true);
+
       setModalAuthorId(null);
     } catch (error) {
       setModalError(
@@ -105,18 +136,6 @@ function AuthorList({ search }: AuthorProps) {
       );
     }
   };
-
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <p className={styles.error}>{error}</p>
-      </div>
-    );
-  }
 
   if (search && authors.length === 0) {
     return (
@@ -137,21 +156,89 @@ function AuthorList({ search }: AuthorProps) {
   return (
     <>
       <div className={styles.authors}>
-        {authors.map((author) => {
-          return (
-            <AuthorCard
-              author={author}
-              key={author._id}
-              onDelete={() => {
-                if (author.hasBooks) {
-                  setModalAuthorId('can not be deleted');
-                } else {
-                  setModalAuthorId(author._id);
-                }
-              }}
-            />
-          );
-        })}
+        {page === 0 ? (
+          isLoading ? (
+            <Loader />
+          ) : error ? (
+            <div className={styles.container}>
+              <p className={styles.error}>{error}</p>
+              <button
+                className={styles.button}
+                onClick={() => fetchAuthors(0, true)}
+              >
+                Спробувати знову
+              </button>
+            </div>
+          ) : (
+            <>
+              {search && totalCount > 0 && (
+                <p className={styles.totalCount}>Знайдено: {totalCount}</p>
+              )}
+              {authors.map((author) => {
+                return (
+                  <AuthorCard
+                    author={author}
+                    key={author._id}
+                    onDelete={() => {
+                      if (author.hasBooks) {
+                        setModalAuthorId('can not be deleted');
+                      } else {
+                        setModalAuthorId(author._id);
+                      }
+                    }}
+                  />
+                );
+              })}
+              <LoadMoreButton
+                onClick={loadMore}
+                hasMore={hasMore}
+                loading={isLoading}
+                error={error}
+              />
+            </>
+          )
+        ) : (
+          <>
+            {search && totalCount > 0 && (
+              <p className={styles.totalCount}>Знайдено: {totalCount}</p>
+            )}
+            {authors.map((author) => {
+              return (
+                <AuthorCard
+                  author={author}
+                  key={author._id}
+                  onDelete={() => {
+                    if (author.hasBooks) {
+                      setModalAuthorId('can not be deleted');
+                    } else {
+                      setModalAuthorId(author._id);
+                    }
+                  }}
+                />
+              );
+            })}
+            {isLoading ? (
+              <Loader />
+            ) : error ? (
+              <div className={styles.container}>
+                <p className={styles.error}>{error}</p>
+                <button
+                  className={styles.button}
+                  onClick={() => fetchAuthors(page)}
+                >
+                  Спробувати знову
+                </button>
+              </div>
+            ) : (
+              <LoadMoreButton
+                onClick={loadMore}
+                hasMore={hasMore}
+                loading={isLoading}
+                error={error}
+              />
+            )}
+          </>
+        )}
       </div>
       {modalAuthorId && modalAuthorId !== 'can not be deleted' && (
         <ConfirmModal

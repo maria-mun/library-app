@@ -39,10 +39,6 @@
   outline: none;
 }
 
-.input::placeholder {
-  opacity: 0;
-}
-
 .input:focus,
 .input:focus-within {
   outline: 1px solid var(--accent1);

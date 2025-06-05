@@ -10,6 +10,8 @@ interface AuthContextType {
   user: User | null;
   role: string | null;
   userId: string | null;
+  photo: string | null;
+
   loadingUser: boolean;
   loginUser: (email: string, password: string) => Promise<User | null>;
   registerUser: (
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loadingUser, setLoadingUser] = useState(true);
   const [role, setRole] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
@@ -38,25 +41,31 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(firebaseUser);
         try {
           await new Promise((res) => setTimeout(res, 3000));
-          const { role, userMongoId } = await fetchUserRole(firebaseUser);
+          const { role, userMongoId, photo } = await fetchUserInfo(
+            firebaseUser
+          );
           setRole(role);
           setUserId(userMongoId);
+          setPhoto(photo);
         } catch (err) {
           setRole(null);
           setUserId(null);
+          setPhoto(null);
+
           console.error('Помилка при отриманні ролі:', err);
         }
       } else {
         setUser(null);
         setRole(null);
         setUserId(null);
+        setPhoto(null);
       }
       setLoadingUser(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const fetchUserRole = async (firebaseUser: User) => {
+  const fetchUserInfo = async (firebaseUser: User) => {
     const token = await firebaseUser.getIdToken();
     const res = await fetch(`${API_URL}/auth/me`, {
       headers: {
@@ -70,8 +79,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const data = await res.json();
     console.log('role', data);
     const role = data.role;
-    const userMongoId = data.user._id;
-    return { role, userMongoId };
+    const userMongoId = data.userId;
+    const photo = data.photo;
+    const listCounts = data.listCounts;
+    return { role, userMongoId, photo, listCounts };
   };
 
   const logoutUser = async () => {
@@ -93,6 +104,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         role,
         userId,
+        photo,
+
         loadingUser,
         loginUser,
         registerUser,

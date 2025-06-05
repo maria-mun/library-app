@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import BookCard from '../BookCard/BookCard';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
+import LoadMoreButton from '../LoadMore/LoadMore';
 import { useAuth } from '../../AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,17 +46,25 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
 
   const navigate = useNavigate();
 
+  const [totalCount, setTotalCount] = useState(0);
+
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 3;
+
   useEffect(() => {
     if (!loadingUser) {
-      fetchBooks();
+      setPage(0);
+      fetchBooks(0, true);
     }
   }, [authorId, sort, order, search, loadingUser, list]);
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (pageToLoad = 0, reset = false) => {
     setIsLoading(true);
     setError(null);
 
     try {
+      /*await new Promise((res) => setTimeout(res, 3000));*/
       let url = `${API_URL}/books/${user ? 'authorized' : 'public'}`;
       const params = new URLSearchParams();
 
@@ -71,6 +80,9 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
       if (search) {
         params.append('search', search);
       }
+
+      params.append('offset', String(pageToLoad * limit));
+      params.append('limit', String(limit));
 
       if (list) {
         params.append('list', list);
@@ -93,13 +105,23 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
         method: 'GET',
         headers,
       });
-      const data = await response.json();
+      const { data, totalCount } = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || 'Помилка при завантаженні книг');
       }
 
-      setBooks(data);
+      if (search || list) {
+        setTotalCount(totalCount);
+      }
+
+      if (reset) {
+        setBooks(data);
+      } else {
+        setBooks((prev) => [...prev, ...data]);
+      }
+
+      setHasMore((pageToLoad + 1) * limit < totalCount);
     } catch (error) {
       setError(
         error instanceof Error ? error.message : 'Помилка при завантаженні книг'
@@ -107,6 +129,12 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchBooks(nextPage);
   };
 
   const handleDelete = async (id: string) => {
@@ -123,8 +151,8 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Не вдалося видалити книгу.');
       }
-
-      fetchBooks();
+      setPage(0);
+      fetchBooks(0, true);
       setModalBookId(null);
       if (authorId) navigate(0);
     } catch (error) {
@@ -133,17 +161,6 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
       );
     }
   };
-
-  if (isLoading) {
-    return <Loader />;
-  }
-  if (error) {
-    return (
-      <div className={styles.container}>
-        <p className={styles.error}>{error}</p>
-      </div>
-    );
-  }
 
   if (search && books.length === 0) {
     return (
@@ -164,16 +181,81 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
   return (
     <>
       <div className={styles.books}>
-        {books.map((book) => (
-          <BookCard
-            user={user}
-            key={book._id}
-            book={book}
-            onDelete={() => setModalBookId(book._id)}
-            isList={!!list}
-            onRemovalFromMyList={fetchBooks}
-          />
-        ))}
+        {page === 0 ? (
+          isLoading ? (
+            <Loader />
+          ) : error ? (
+            <div className={styles.container}>
+              <p className={styles.error}>{error}</p>
+              <button
+                className={styles.button}
+                onClick={() => fetchBooks(0, true)}
+              >
+                Спробувати знову
+              </button>
+            </div>
+          ) : (
+            <>
+              {(search && totalCount > 0) ||
+                (list && (
+                  <p className={styles.totalCount}>Знайдено: {totalCount}</p>
+                ))}
+              {books.map((book) => (
+                <BookCard
+                  user={user}
+                  key={book._id}
+                  book={book}
+                  onDelete={() => setModalBookId(book._id)}
+                  isList={!!list}
+                  onRemovalFromMyList={() => fetchBooks(0, true)}
+                />
+              ))}
+              <LoadMoreButton
+                onClick={loadMore}
+                hasMore={hasMore}
+                loading={isLoading}
+                error={error}
+              />
+            </>
+          )
+        ) : (
+          <>
+            {(search && totalCount > 0) ||
+              (list && (
+                <p className={styles.totalCount}>Знайдено: {totalCount}</p>
+              ))}
+            {books.map((book) => (
+              <BookCard
+                user={user}
+                key={book._id}
+                book={book}
+                onDelete={() => setModalBookId(book._id)}
+                isList={!!list}
+                onRemovalFromMyList={() => fetchBooks(0, true)}
+              />
+            ))}
+            {isLoading ? (
+              <Loader />
+            ) : error ? (
+              <div className={styles.container}>
+                <p className={styles.error}>{error}</p>
+                <button
+                  className={styles.button}
+                  onClick={() => fetchBooks(page)}
+                >
+                  Спробувати знову
+                </button>
+              </div>
+            ) : (
+              <LoadMoreButton
+                onClick={loadMore}
+                hasMore={hasMore}
+                loading={isLoading}
+                error={error}
+              />
+            )}
+          </>
+        )}
       </div>
       {modalBookId && role === 'admin' && (
         <ConfirmModal

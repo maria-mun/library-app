@@ -1,0 +1,29 @@
+/* loadMore.module.css */
+.wrapper {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.button {
+  background: #222;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin-bottom: 0.5rem;
+}
+
+.done {
+  color: #777;
+  font-size: 0.9rem;
+  text-align: center;
+}

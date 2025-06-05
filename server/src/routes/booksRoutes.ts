@@ -27,6 +27,8 @@ router.get(
     }
 
     const { sort, order, author, search } = req.query;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     try {
       const filter: any = {};
@@ -38,11 +40,21 @@ router.get(
         filter.$or = [{ title: searchRegex }];
       }
 
-      const books = await Book.find(filter)
-        .populate('author', '_id name country')
-        .sort({ [sort as string]: order === 'asc' ? 1 : -1 });
+      const sortObj: any = {};
+      if (sort) {
+        sortObj[sort as string] = order === 'asc' ? 1 : -1;
+      }
+      sortObj._id = 1;
 
-      res.json(books);
+      const books = await Book.find(filter)
+        .sort(sortObj)
+        .skip(offset)
+        .limit(limit)
+        .populate('author', '_id name country');
+
+      const totalCount = await Book.countDocuments(filter);
+
+      res.json({ data: books, totalCount });
     } catch (error) {
       console.error(error);
       res.status(500).json({
@@ -72,6 +84,8 @@ router.get(
 
     const firebaseUid = req.user?.uid;
     const { sort, order, author, search, list } = req.query;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     try {
       const filter: any = {};
@@ -106,9 +120,17 @@ router.get(
         filter.$or = [{ title: searchRegex }];
       }
 
+      const sortObj: any = {};
+      if (sort) {
+        sortObj[sort as string] = order === 'asc' ? 1 : -1;
+      }
+      sortObj._id = 1;
+
       const books = await Book.find(filter)
-        .populate('author', '_id name country')
-        .sort({ [sort as string]: order === 'asc' ? 1 : -1 });
+        .sort(sortObj)
+        .skip(offset)
+        .limit(limit)
+        .populate('author', '_id name country');
 
       // Додаємо дані користувача до книг
       const booksWithUserData = books.map((book) => {
@@ -142,7 +164,9 @@ router.get(
         };
       });
 
-      res.json(booksWithUserData);
+      const totalCount = await Book.countDocuments(filter);
+
+      res.json({ data: booksWithUserData, totalCount });
     } catch (error) {
       console.error(error);
       res.status(500).json({
@@ -155,7 +179,10 @@ router.get(
 router.get('/public/:id', async (req: Request, res: Response) => {
   const bookId = req.params.id;
   try {
-    const book = await Book.findById(bookId).populate('author');
+    const book = await Book.findById(bookId).populate(
+      'author',
+      '_id name country'
+    );
     if (!book) {
       res.status(404).json({ message: 'Книга не знайдена.' });
       return;
@@ -183,7 +210,10 @@ router.get(
 
     const bookId = req.params.id;
     try {
-      const book = await Book.findById(bookId).populate('author');
+      const book = await Book.findById(bookId).populate(
+        'author',
+        '_id name country'
+      );
       if (!book) {
         res.status(404).json({ message: 'Книга не знайдена.' });
         return;

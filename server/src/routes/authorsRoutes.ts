@@ -29,6 +29,8 @@ router.get(
 
     const firebaseUid = req.user?.uid;
     const searchQuery = req.query.search;
+    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 10;
 
     try {
       const filter: any = {};
@@ -37,9 +39,10 @@ router.get(
         filter.name = { $regex: searchQuery, $options: 'i' };
       }
 
-      const authors = await Author.find(filter).select(
-        '_id name country description photo'
-      );
+      const authors = await Author.find(filter)
+        .select('_id name country description photo')
+        .skip(offset)
+        .limit(limit);
 
       const authorIds = authors.map((a) => a._id);
 
@@ -75,7 +78,9 @@ router.get(
         };
       });
 
-      res.json(result);
+      const totalCount = await Author.countDocuments(filter);
+
+      res.json({ data: result, totalCount });
     } catch (error) {
       console.error('Помилка при отриманні авторів:', error);
       res.status(500).json({
@@ -102,19 +107,26 @@ router.get(
       return;
     }
 
+    const offset = parseInt(req.query.offset as string) || 0;
+    const limit = parseInt(req.query.limit as string) || 10;
+
     try {
       const searchQuery = req.query.search;
-      let authors;
+
+      const filter: any = {};
+
       if (searchQuery) {
-        authors = await Author.find({
-          name: { $regex: searchQuery, $options: 'i' },
-        }).select('_id name country description photo');
-      } else {
-        authors = await Author.find().select(
-          '_id name country description photo'
-        );
+        filter.name = { $regex: searchQuery, $options: 'i' };
       }
-      res.json(authors);
+
+      const authors = await Author.find(filter)
+        .select('_id name country description photo')
+        .skip(offset)
+        .limit(limit);
+
+      const totalCount = await Author.countDocuments(filter);
+
+      res.json({ data: authors, totalCount });
     } catch (error) {
       res.status(500).json({
         error: 'Щось пішло не так при отриманні авторів. Спробуйте ще раз.',

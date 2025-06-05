@@ -9,7 +9,10 @@ const router = express.Router();
 
 router.get('/book/:bookId', async (req: Request, res: Response) => {
   const { bookId } = req.params;
+
   const sort = req.query.sort === 'oldest' ? 1 : -1; // newest by default
+  const offset = parseInt(req.query.offset as string) || 0;
+  const limit = parseInt(req.query.limit as string) || 10;
 
   try {
     const bookExists = await Book.exists({ _id: bookId });
@@ -19,17 +22,21 @@ router.get('/book/:bookId', async (req: Request, res: Response) => {
     }
 
     const comments = await Comment.find({ bookId })
+      .sort({ createdAt: sort })
+      .skip(offset)
+      .limit(limit)
       .populate({
         path: 'userId',
         select: 'name photo',
         options: { strictPopulate: false },
-      })
-      .sort({ createdAt: sort });
+      });
 
-    res.json(comments);
+    const totalCount = await Comment.countDocuments({ bookId });
+
+    res.json({ data: comments, totalCount });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Помилка при отриманні коментарів.' });
+    res.status(500).json({ message: 'Помилка при завантаженні коментарів.' });
   }
 });
 

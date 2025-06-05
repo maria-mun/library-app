@@ -3,35 +3,65 @@ import { useNavigate } from 'react-router-dom';
 import Loader from '../Loader/Loader';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import { useAuth } from '../../AuthContext';
+import Select, { SelectOption } from '../Select/Select';
+import LoadMoreButton from '../LoadMore/LoadMore';
+import BinIcon from '../Icons/BinIcon';
 import styles from './comment-section.module.css';
 const API_URL = import.meta.env.VITE_API_URL;
 
+const sortOptions: SelectOption[] = [
+  { value: 'newest', label: 'спочатку новіші' },
+  { value: 'oldest', label: 'спочатку старіші' },
+];
+
 export default function CommentSection({ bookId }: { bookId: string }) {
   const [comments, setComments] = useState<Comment[]>([]);
+  const [totalCount, setTotalCount] = useState(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [sortOrder, setSortOrder] = useState<string>();
+
+  const [selectedSort, setSelectedSort] = useState<SelectOption>(
+    sortOptions[0]
+  );
+
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const limit = 3;
+
   const { loadingUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loadingUser) {
-      fetchComments();
+      setPage(0);
+      fetchComments(0, true);
     }
-  }, [sortOrder, loadingUser]);
+  }, [selectedSort, loadingUser]);
 
-  const fetchComments = async () => {
+  const fetchComments = async (pageToLoad = 0, reset = false) => {
     setError(null);
+    setLoading(true);
+
     try {
-      setLoading(true);
+      /* await new Promise((res) => setTimeout(res, 3000)); */
       const response = await fetch(
-        `${API_URL}/comments/book/${bookId}?sort=${sortOrder}`
+        `${API_URL}/comments/book/${bookId}?sort=${selectedSort.value}&offset=${
+          pageToLoad * limit
+        }&limit=${limit}`
       );
-      const data = await response.json();
+      const { data, totalCount } = await response.json();
 
       if (!response.ok) {
         throw new Error(data.message || 'Помилка при завантаженні коментарів.');
       }
-      setComments(data);
+
+      if (reset) {
+        setComments(data);
+      } else {
+        setComments((prev) => [...prev, ...data]);
+      }
+
+      setHasMore((pageToLoad + 1) * limit < totalCount);
+      setTotalCount(totalCount);
     } catch (error) {
       setError(
         error instanceof Error
@@ -43,33 +73,94 @@ export default function CommentSection({ bookId }: { bookId: string }) {
     }
   };
 
-  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortOrder(e.target.value);
+  const handleSortChange = (option: SelectOption | undefined) => {
+    setSelectedSort(option || sortOptions[0]);
+  };
+
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetchComments(nextPage);
   };
 
   return (
     <div className={styles['comment-section']}>
-      <p>Коментарі ({comments.length})</p>
-      <div>
-        <span>Сортувати:</span>
-        <select
+      <h2>
+        Коментарі ({comments.length} із {totalCount})
+      </h2>
+      <div className={styles.sort}>
+        <span>Сортування:</span>
+        <Select
+          options={sortOptions}
+          value={selectedSort}
           onChange={handleSortChange}
-          defaultValue="newest"
-          className={styles.sort}
-        >
-          <option value="newest">Спочатку новіші</option>
-          <option value="oldest">Спочатку старіші</option>
-        </select>
+        />
       </div>
-      <CommentInput bookId={bookId} onCommentAdded={fetchComments} />
-      {loading ? (
-        <Loader />
-      ) : error ? (
-        <div className={styles.container}>
-          <p className={styles.error}>{error}</p>
-        </div>
+      <CommentInput
+        bookId={bookId}
+        onCommentAdded={() => {
+          setSelectedSort(sortOptions[0]);
+          setPage(0);
+          fetchComments(0, true);
+        }}
+      />
+      {page === 0 ? (
+        loading ? (
+          <Loader />
+        ) : error ? (
+          <div className={styles.container}>
+            <p className={styles.error}>{error}</p>
+            <button
+              className={styles.button}
+              onClick={() => fetchComments(0, true)}
+            >
+              Спробувати знову
+            </button>
+          </div>
+        ) : (
+          <>
+            <Comments
+              comments={comments}
+              onCommentDeleted={() => {
+                setPage(0);
+                fetchComments(0, true);
+              }}
+            />
+            <LoadMoreButton
+              onClick={loadMore}
+              hasMore={hasMore}
+              loading={loading}
+              error={error}
+            />
+          </>
+        )
       ) : (
-        <Comments comments={comments} onCommentDeleted={fetchComments} />
+        <>
+          <Comments
+            comments={comments}
+            onCommentDeleted={() => fetchComments(0, true)}
+          />
+          {loading ? (
+            <Loader />
+          ) : error ? (
+            <div className={styles.container}>
+              <p className={styles.error}>{error}</p>
+              <button
+                className={styles.button}
+                onClick={() => fetchComments(page)}
+              >
+                Спробувати знову
+              </button>
+            </div>
+          ) : (
+            <LoadMoreButton
+              onClick={loadMore}
+              hasMore={hasMore}
+              loading={loading}
+              error={error}
+            />
+          )}
+        </>
       )}
     </div>
   );
@@ -81,6 +172,7 @@ type Comment = {
   userId: {
     _id: string | null;
     name: string;
+    photo: string;
   };
   text: string;
   createdAt: string;
@@ -137,33 +229,40 @@ function Comments({ comments, onCommentDeleted }: CommentsProps) {
 
         return (
           <div key={com._id} className={styles.comment}>
-            <div className={styles['user-photo']}>
-              {com.userId ? (
-                <img
-                  src={'com.userId.photo' || 'defaultUserPhoto'}
-                  alt="User photo"
-                />
-              ) : (
-                <img
-                  src={'deletedUserPhoto'}
-                  alt="Видалений користувач, фото"
-                />
-              )}
+            <div className={styles.top}>
+              <div className={styles.left}>
+                {com.userId ? (
+                  <div className={styles['user-photo']}>
+                    {com.userId.photo && <img src={com.userId.photo} />}
+                  </div>
+                ) : (
+                  <div
+                    className={`${styles['user-photo']} ${styles.deleted}`}
+                  ></div>
+                )}
+              </div>
+              <div className={styles['com-content']}>
+                <h3
+                  className={`${styles['user-name']} ${
+                    userId === com.userId?._id ? styles.current : ''
+                  }`}
+                >
+                  {com.userId ? com.userId.name : '[Користувач видалений]'}
+                </h3>
+                <p className={styles.text}>{com.text}</p>
+              </div>
             </div>
-            <div className={styles['com-content']}>
-              <h6>{com.userId ? com.userId.name : '[Користувач видалений]'}</h6>
-              <p className={styles.text}>{com.text}</p>
-              <p className={styles.date}>{formatted} </p>
+            <div className={styles.bottom}>
               {(userId === com.userId?._id || role === 'admin') && (
                 <button
-                  className={styles['delete-my-comment-btn']}
+                  className={`${styles.button} ${styles['delete-com-btn']}`}
                   onClick={() => setModalCommentId(com._id)}
                 >
-                  {userId === com.userId?._id
-                    ? 'Видалити свій коментар'
-                    : 'Видалити коментар'}
+                  <BinIcon size={20} />
+                  Видалити
                 </button>
-              )}
+              )}{' '}
+              <span className={styles.date}>{formatted} </span>
             </div>
           </div>
         );
@@ -228,14 +327,26 @@ function CommentInput({ bookId, onCommentAdded }: CommentInputProps) {
   return (
     <div className={styles['comment-input']}>
       <textarea
+        className={styles.textarea}
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder="Залишіть коментар"
       ></textarea>
       {user ? (
-        <button onClick={handleSubmit}>Надіслати</button>
+        <button
+          className={`${styles['send-btn']} ${styles.button}`}
+          onClick={handleSubmit}
+          disabled={!text}
+        >
+          Надіслати
+        </button>
       ) : (
-        <button onClick={() => navigate('/register')}>Надіслати</button>
+        <button
+          className={`${styles['send-btn']} ${styles.button}`}
+          onClick={() => navigate('/register')}
+        >
+          Надіслати
+        </button>
       )}
     </div>
   );
