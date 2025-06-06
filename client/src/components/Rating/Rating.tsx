@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../../AuthContext';
 import { Link } from 'react-router-dom';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
-
+import { getErrorMessage } from '../../utils/errorUtils';
 import StarIcon from '../Icons/StarIcon';
 import XIcon from '../Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
@@ -104,11 +104,7 @@ function RatingModal({
       onClose();
       return await res.json();
     } catch (error) {
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка. Не вдалося оновити оцінку.'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }

@@ -7,10 +7,13 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal.tsx';
 import EditIcon from '../../components/Icons/EditIcon.tsx';
 import Loader from '../../components/Loader/Loader.tsx';
+import { getErrorMessage } from '../../utils/errorUtils.ts';
 const API_URL = import.meta.env.VITE_API_URL;
 function ProfilePage() {
   const { getFreshToken, user, loadingUser, photo } = useAuth();
   const navigate = useNavigate();
+
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const [confirmModalOpened, setConfirmModalOpened] = useState(false);
   const [editingName, setEditingName] = useState(false);
@@ -43,7 +46,7 @@ function ProfilePage() {
     if (!token) return;
 
     try {
-      await fetch(`${API_URL}/auth/updateName`, {
+      const res = await fetch(`${API_URL}/auth/updateName`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -51,16 +54,16 @@ function ProfilePage() {
         },
         body: JSON.stringify({ newName: name }),
       });
+
+      if (!res.ok) {
+        throw new Error('Помилка при оновленні пошти.');
+      }
+
       setOriginalName(name);
       setEditingName(false);
     } catch (error) {
       console.error(error);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+      setModalError(getErrorMessage(error));
     }
   };
 
@@ -69,7 +72,7 @@ function ProfilePage() {
     if (!token) return;
 
     try {
-      await fetch(`${API_URL}/auth/updateEmail`, {
+      const res = await fetch(`${API_URL}/auth/updateEmail`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -77,17 +80,16 @@ function ProfilePage() {
         },
         body: JSON.stringify({ newEmail: email }),
       });
+      if (!res.ok) {
+        throw new Error('Помилка при оновленні пошти.');
+      }
+
       setOriginalEmail(email);
       setEditingEmail(false);
       navigate('/login');
     } catch (error) {
       console.error(error);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Не вдалося оновити пошту. Спробуйте ще раз.',
-        },
-      });
+      setModalError(getErrorMessage(error));
     }
   };
 
@@ -96,24 +98,24 @@ function ProfilePage() {
     if (!token) return;
 
     try {
-      await fetch(`${API_URL}/auth/updatePhoto`, {
+      const res = await fetch(`${API_URL}/auth/updatePhoto`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}1`,
         },
         body: JSON.stringify({ newPhotoUrl: photoUrl }),
       });
+
+      if (!res.ok) {
+        throw new Error('Помилка при оновленні фото');
+      }
+
       setOriginalPhotoUrl(photoUrl);
       setEditingPhotoUrl(false);
     } catch (error) {
       console.error(error);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Не вдалося оновити пошту. Спробуйте ще раз.',
-        },
-      });
+      setModalError(getErrorMessage(error));
     }
   };
 
@@ -137,12 +139,7 @@ function ProfilePage() {
       navigate('/allBooks');
     } catch (err) {
       console.error(err);
-      navigate('/error', {
-        state: {
-          code: 500,
-          message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-        },
-      });
+      setModalError(getErrorMessage(err));
     }
   };
 
@@ -303,6 +300,13 @@ function ProfilePage() {
           message="Впевнені, що хочете видалити свій профіль назавжди?"
           onClose={() => setConfirmModalOpened(false)}
           onConfirm={handleDeleteProfile}
+        />
+      )}
+
+      {modalError && (
+        <ConfirmModal
+          message={modalError}
+          onClose={() => setModalError(null)}
         />
       )}
     </div>

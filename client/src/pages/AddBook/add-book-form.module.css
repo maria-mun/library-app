@@ -8,7 +8,7 @@
   width: 100%;
   margin: 4rem auto 6rem;
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   background-color: var(--bg1);
 }
 
@@ -30,7 +30,7 @@
 
 .input {
   padding: 0.5rem;
-  border-radius: 0.3rem;
+  border-radius: var(--border-radius);
   background-color: var(--bg2);
   border: none;
   color: var(--accent1);
@@ -59,7 +59,7 @@
   border: 1px solid grey;
   cursor: pointer;
   color: grey;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
 .close-btn:hover {
@@ -96,7 +96,7 @@
   height: 1em;
   border: 2px solid #fff;
   border-bottom-color: transparent;
-  border-radius: 50%;
+  border-radius: 999px;
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;

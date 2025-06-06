@@ -7,7 +7,7 @@
   gap: 0.5em;
   width: 22em;
   background-color: var(--bg1);
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   padding: 1em;
 }
 
@@ -43,7 +43,7 @@
 
 .input:focus,
 .input:focus-within {
-  outline: 2px solid var(--accent1);
+  outline: 1px solid var(--accent1);
 }
 
 .close-btn {
@@ -57,7 +57,7 @@
   border: 1px solid grey;
   cursor: pointer;
   color: grey;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
 .close-btn:hover {
@@ -93,7 +93,7 @@
   height: 1em;
   border: 2px solid #fff;
   border-bottom-color: transparent;
-  border-radius: 50%;
+  border-radius: 999px;
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;

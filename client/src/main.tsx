@@ -1,11 +1,15 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
 import Root from './pages/Root/Root';
 import ErrorPage from './pages/ErrorPage/ErrorPage';
 import AllBooks from './pages/AllBooks/AllBooks';
-import Home from './pages/Home/Home';
+
 import AddBookForm from './pages/AddBook/AddBook';
 import AddAuthorForm from './pages/AddAuthor/AddAuthor';
 import BookDetail from './pages/BookDetail/BookDetail';
@@ -25,7 +29,8 @@ const router = createBrowserRouter([
     path: '/',
     element: <Root />,
     children: [
-      { index: true, element: <Home /> },
+      /* { index: true, element: <Home /> }, */
+      { index: true, element: <Navigate to="/allBooks" replace /> },
       {
         path: '/allBooks',
         element: <AllBooks />,

@@ -1,5 +1,6 @@
 import styles from './select.module.css';
 import { useState } from 'react';
+import ArrowIcon from '../Icons/ArrowIcon';
 
 export type SelectOption = {
   value: string;
@@ -113,7 +114,7 @@ const Select = ({ multiple, label, value, onChange, options }: SelectProps) => {
           </>
         )}
 
-        <div className={styles.caret}></div>
+        <ArrowIcon isOpen={isOpen} />
         <ul className={`${styles.options} ${isOpen ? styles.show : ''}`}>
           {options.map((option) => (
             <li

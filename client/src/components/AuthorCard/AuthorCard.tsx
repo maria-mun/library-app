@@ -6,6 +6,7 @@ import BinIcon from '../Icons/BinIcon';
 import EditIcon from '../Icons/EditIcon';
 import Spinner from '../Spinner/Spinner';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
+import { getErrorMessage } from '../../utils/errorUtils';
 const API_URL = import.meta.env.VITE_API_URL;
 
 type Author = {
@@ -72,7 +73,7 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
 
       if (!res.ok) {
         throw new Error(
-          'Виникла помилка. Не вдалося оновити улюблених авторів.'
+          'Виникла помилка. Не вдалося оновити список улюблених авторів.'
         );
       }
 
@@ -81,11 +82,7 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
 
       setIsFavorite(status === 'added');
     } catch (error) {
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка. Не вдалося оновити улюблених авторів'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setLoadingToggle(false);
     }

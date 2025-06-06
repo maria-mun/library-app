@@ -7,7 +7,7 @@
   gap: 0.5em;
   width: fit-content;
   background-color: var(--bg1);
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   padding: 1em;
 }
 
@@ -29,7 +29,7 @@
   border: 1px solid grey;
   cursor: pointer;
   color: grey;
-  border-radius: 50%;
+  border-radius: 999px;
 }
 
 .close-btn:hover {
@@ -65,7 +65,7 @@
   height: 1em;
   border: 2px solid #fff;
   border-bottom-color: transparent;
-  border-radius: 50%;
+  border-radius: 999px;
   display: inline-block;
   box-sizing: border-box;
   animation: rotation 1s linear infinite;
@@ -87,76 +87,6 @@
   align-items: center;
   justify-content: center;
   gap: 2em;
-}
-
-.input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3em;
-}
-
-.label {
-  color: var(--neutral);
-  font-size: 0.9rem;
-}
-
-.input {
-  padding: 0.3em 0.5em;
-  border-radius: var(--border-radius);
-  background-color: var(--bg2);
-  border: none;
-  color: var(--accent1);
-  font-size: 1rem;
-  width: 20em;
-  outline: none;
-  line-height: 1.8em;
-}
-
-.input::placeholder {
-  opacity: 0;
-}
-
-.input:focus + .label,
-.input:not(:placeholder-shown) + .label {
-  background-color: var(--bg1);
-  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
-}
-
-.input:focus,
-.input:focus-within {
-  outline: 2px solid var(--accent1);
-}
-
-.input-group.invalid {
-  color: rgb(206, 0, 0);
-}
-
-.input-group.valid {
-  color: rgb(0, 132, 0);
-}
-
-.input-group.invalid .input {
-  border: 1px solid rgb(206, 0, 0);
-}
-
-.input-group.invalid .input:focus,
-.input-group.invalid .input:focus-within {
-  box-shadow: 0 0 10px lightcoral;
-}
-
-.input-group.valid .input:focus,
-.input-group.valid .input:focus-within {
-  box-shadow: 0 0 10px lightgreen;
-}
-
-.input-group.valid .input {
-  border: 1px solid rgb(0, 132, 0);
-}
-
-.input-error,
-.error {
-  font-size: 0.8rem;
-  color: rgb(206, 0, 0);
 }
 
 .checkbox {

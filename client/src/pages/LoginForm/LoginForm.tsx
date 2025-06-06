@@ -5,6 +5,7 @@ import { auth } from '../../firebase/firebaseConfig';
 import Input from '../../components/Input/Input';
 import styles from './login-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
+import { getErrorMessage } from '../../utils/errorUtils';
 
 const LoginForm = () => {
   const [loading, setLoading] = useState(false);
@@ -57,13 +58,10 @@ const LoginForm = () => {
       const error = err as { code: string };
       if (error.code === 'auth/invalid-credential') {
         setError('Неправильна електронна адреса або пароль');
+      } else if (error.code === 'auth/network-request-failed') {
+        setError("Помилка мережі. Перевірте з'єднання з Інтернетом");
       } else {
-        navigate('/error', {
-          state: {
-            code: 500,
-            message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-          },
-        });
+        setError(getErrorMessage(err));
       }
     } finally {
       setLoading(false);

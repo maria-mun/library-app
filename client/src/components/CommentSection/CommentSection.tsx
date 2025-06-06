@@ -7,6 +7,8 @@ import Select, { SelectOption } from '../Select/Select';
 import LoadMoreButton from '../LoadMore/LoadMore';
 import BinIcon from '../Icons/BinIcon';
 import styles from './comment-section.module.css';
+import { getErrorMessage } from '../../utils/errorUtils';
+import ErrorComponent from '../Error/ErrorComponent';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const sortOptions: SelectOption[] = [
@@ -25,7 +27,7 @@ export default function CommentSection({ bookId }: { bookId: string }) {
 
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const limit = 3;
+  const limit = 10;
 
   const { loadingUser } = useAuth();
   const [error, setError] = useState<string | null>(null);
@@ -48,10 +50,10 @@ export default function CommentSection({ bookId }: { bookId: string }) {
           pageToLoad * limit
         }&limit=${limit}`
       );
-      const { data, totalCount } = await response.json();
+      const { data, totalCount, message } = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Помилка при завантаженні коментарів.');
+        throw new Error(message || 'Помилка при завантаженні коментарів.');
       }
 
       if (reset) {
@@ -63,11 +65,7 @@ export default function CommentSection({ bookId }: { bookId: string }) {
       setHasMore((pageToLoad + 1) * limit < totalCount);
       setTotalCount(totalCount);
     } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Помилка при завантаженні коментарів.'
-      );
+      setError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -85,7 +83,7 @@ export default function CommentSection({ bookId }: { bookId: string }) {
 
   return (
     <div className={styles['comment-section']}>
-      <h2>
+      <h2 className={styles.heading2}>
         Коментарі ({comments.length} із {totalCount})
       </h2>
       <div className={styles.sort}>
@@ -108,15 +106,10 @@ export default function CommentSection({ bookId }: { bookId: string }) {
         loading ? (
           <Loader />
         ) : error ? (
-          <div className={styles.container}>
-            <p className={styles.error}>{error}</p>
-            <button
-              className={styles.button}
-              onClick={() => fetchComments(0, true)}
-            >
-              Спробувати знову
-            </button>
-          </div>
+          <ErrorComponent
+            error={error}
+            tryAgain={() => fetchComments(0, true)}
+          />
         ) : (
           <>
             <Comments
@@ -143,15 +136,10 @@ export default function CommentSection({ bookId }: { bookId: string }) {
           {loading ? (
             <Loader />
           ) : error ? (
-            <div className={styles.container}>
-              <p className={styles.error}>{error}</p>
-              <button
-                className={styles.button}
-                onClick={() => fetchComments(page)}
-              >
-                Спробувати знову
-              </button>
-            </div>
+            <ErrorComponent
+              error={error}
+              tryAgain={() => fetchComments(page, false)}
+            />
           ) : (
             <LoadMoreButton
               onClick={loadMore}
@@ -212,7 +200,11 @@ function Comments({ comments, onCommentDeleted }: CommentsProps) {
   };
 
   if (comments.length === 0) {
-    return <p>Коментарів поки немає.</p>;
+    return (
+      <div className={styles.container}>
+        <p>Коментарів поки немає.</p>
+      </div>
+    );
   }
 
   return (

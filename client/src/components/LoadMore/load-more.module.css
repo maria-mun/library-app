@@ -5,11 +5,16 @@
 }
 
 .button {
-  background: #222;
-  color: white;
-  padding: 0.5rem 1rem;
+  background-color: var(--bg1);
   border: none;
+  border-radius: var(--border-radius);
+  color: var(--accent1);
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  font-size: 1rem;
   cursor: pointer;
+  margin: 0 auto;
 }
 
 .button:disabled {

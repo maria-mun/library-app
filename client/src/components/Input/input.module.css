@@ -25,15 +25,9 @@
   opacity: 0;
 }
 
-.input:focus + .label,
-.input:not(:placeholder-shown) + .label {
-  background-color: var(--bg1);
-  transform: translateY(calc(-50% - var(--pad))) scale(0.8);
-}
-
 .input:focus,
 .input:focus-within {
-  outline: 2px solid var(--accent1);
+  outline: 1px solid var(--accent1);
 }
 
 .input-group.invalid {
@@ -48,18 +42,18 @@
   border: 1px solid rgb(206, 0, 0);
 }
 
+.input-group.valid .input {
+  border: 1px solid rgb(0, 132, 0);
+}
+
 .input-group.invalid .input:focus,
 .input-group.invalid .input:focus-within {
-  box-shadow: 0 0 10px lightcoral;
+  outline: 1px solid rgb(206, 0, 0);
 }
 
 .input-group.valid .input:focus,
 .input-group.valid .input:focus-within {
-  box-shadow: 0 0 10px lightgreen;
-}
-
-.input-group.valid .input {
-  border: 1px solid rgb(0, 132, 0);
+  outline: 1px solid rgb(0, 132, 0);
 }
 
 .input-error {

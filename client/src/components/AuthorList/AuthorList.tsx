@@ -5,6 +5,8 @@ import AuthorCard from '../../components/AuthorCard/AuthorCard';
 import Loader from '../../components/Loader/Loader';
 import LoadMoreButton from '../LoadMore/LoadMore';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import ErrorComponent from '../Error/ErrorComponent';
+import { getErrorMessage } from '../../utils/errorUtils';
 const API_URL = import.meta.env.VITE_API_URL;
 
 type Author = {
@@ -44,7 +46,7 @@ function AuthorList({ search }: AuthorProps) {
 
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const limit = 3;
+  const limit = 10;
 
   useEffect(() => {
     if (!loadingUser) {
@@ -76,10 +78,10 @@ function AuthorList({ search }: AuthorProps) {
         method: 'GET',
         headers,
       });
-      const { data, totalCount } = await response.json();
+      const { data, totalCount, message } = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Помилка при завантаженні авторів.');
+        throw new Error(message || 'Помилка при завантаженні авторів.');
       }
 
       if (search) {
@@ -94,11 +96,7 @@ function AuthorList({ search }: AuthorProps) {
 
       setHasMore((pageToLoad + 1) * limit < totalCount);
     } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Помилка при завантаженні авторів.'
-      );
+      setError(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -131,13 +129,11 @@ function AuthorList({ search }: AuthorProps) {
 
       setModalAuthorId(null);
     } catch (error) {
-      setModalError(
-        error instanceof Error ? error.message : 'Не вдалося видалити автора.'
-      );
+      setModalError(getErrorMessage(error));
     }
   };
 
-  if (search && authors.length === 0) {
+  if (search && !error && authors.length === 0) {
     return (
       <div className={styles.container}>
         <p>Авторів за вашим запитом не знайдено.</p>
@@ -145,7 +141,7 @@ function AuthorList({ search }: AuthorProps) {
     );
   }
 
-  if (!isLoading && authors.length === 0) {
+  if (!isLoading && !error && authors.length === 0) {
     return (
       <div className={styles.container}>
         <p>Авторів поки немає.</p>
@@ -160,15 +156,10 @@ function AuthorList({ search }: AuthorProps) {
           isLoading ? (
             <Loader />
           ) : error ? (
-            <div className={styles.container}>
-              <p className={styles.error}>{error}</p>
-              <button
-                className={styles.button}
-                onClick={() => fetchAuthors(0, true)}
-              >
-                Спробувати знову
-              </button>
-            </div>
+            <ErrorComponent
+              error={error}
+              tryAgain={() => fetchAuthors(0, true)}
+            />
           ) : (
             <>
               {search && totalCount > 0 && (
@@ -220,15 +211,10 @@ function AuthorList({ search }: AuthorProps) {
             {isLoading ? (
               <Loader />
             ) : error ? (
-              <div className={styles.container}>
-                <p className={styles.error}>{error}</p>
-                <button
-                  className={styles.button}
-                  onClick={() => fetchAuthors(page)}
-                >
-                  Спробувати знову
-                </button>
-              </div>
+              <ErrorComponent
+                error={error}
+                tryAgain={() => fetchAuthors(page, false)}
+              />
             ) : (
               <LoadMoreButton
                 onClick={loadMore}

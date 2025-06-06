@@ -4,8 +4,10 @@ import BookCard from '../BookCard/BookCard';
 import ConfirmModal from '../ConfirmModal/ConfirmModal';
 import Loader from '../Loader/Loader';
 import LoadMoreButton from '../LoadMore/LoadMore';
+import ErrorComponent from '../Error/ErrorComponent';
 import { useAuth } from '../../AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { getErrorMessage } from '../../utils/errorUtils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -50,7 +52,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
 
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const limit = 3;
+  const limit = 10;
 
   useEffect(() => {
     if (!loadingUser) {
@@ -105,10 +107,10 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
         method: 'GET',
         headers,
       });
-      const { data, totalCount } = await response.json();
+      const { data, totalCount, message } = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Помилка при завантаженні книг');
+        throw new Error(message || 'Помилка при завантаженні книг');
       }
 
       if (search || list) {
@@ -123,9 +125,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
 
       setHasMore((pageToLoad + 1) * limit < totalCount);
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : 'Помилка при завантаженні книг'
-      );
+      setError(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -156,13 +156,11 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
       setModalBookId(null);
       if (authorId) navigate(0);
     } catch (error) {
-      setModalError(
-        error instanceof Error ? error.message : 'Не вдалося видалити книгу.'
-      );
+      setModalError(getErrorMessage(error));
     }
   };
 
-  if (search && books.length === 0) {
+  if (search && !error && books.length === 0) {
     return (
       <div className={styles.container}>
         <p>Книг за вашим запитом не знайдено.</p>
@@ -170,7 +168,7 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
     );
   }
 
-  if (!isLoading && books.length === 0) {
+  if (!isLoading && !error && books.length === 0) {
     return (
       <div className={styles.container}>
         <p>Книг поки немає.</p>
@@ -185,21 +183,21 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
           isLoading ? (
             <Loader />
           ) : error ? (
-            <div className={styles.container}>
-              <p className={styles.error}>{error}</p>
-              <button
-                className={styles.button}
-                onClick={() => fetchBooks(0, true)}
-              >
-                Спробувати знову
-              </button>
-            </div>
+            <ErrorComponent
+              error={error}
+              tryAgain={() => fetchBooks(0, true)}
+            />
           ) : (
             <>
-              {(search && totalCount > 0) ||
-                (list && (
-                  <p className={styles.totalCount}>Знайдено: {totalCount}</p>
-                ))}
+              {search && totalCount > 0 ? (
+                <p className={styles.totalCount}>Знайдено: {totalCount}</p>
+              ) : (
+                list && (
+                  <p className={styles.totalCount}>
+                    Книг у списку: {totalCount}
+                  </p>
+                )
+              )}
               {books.map((book) => (
                 <BookCard
                   user={user}
@@ -237,15 +235,10 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
             {isLoading ? (
               <Loader />
             ) : error ? (
-              <div className={styles.container}>
-                <p className={styles.error}>{error}</p>
-                <button
-                  className={styles.button}
-                  onClick={() => fetchBooks(page)}
-                >
-                  Спробувати знову
-                </button>
-              </div>
+              <ErrorComponent
+                error={error}
+                tryAgain={() => fetchBooks(page, false)}
+              />
             ) : (
               <LoadMoreButton
                 onClick={loadMore}

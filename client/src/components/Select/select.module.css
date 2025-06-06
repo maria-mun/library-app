@@ -67,19 +67,6 @@
   width: 0.05em;
 }
 
-.caret {
-  border: 0.25em solid transparent;
-  border-top-color: var(--neutral);
-  align-self: center;
-  translate: 0 25%;
-  cursor: pointer;
-  font-size: 1.5em;
-}
-
-.caret:hover {
-  border-top-color: var(--accent1);
-}
-
 .options {
   list-style: none;
   display: none;

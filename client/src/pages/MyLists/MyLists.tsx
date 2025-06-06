@@ -14,6 +14,8 @@ const lists = [
 
 const sortOptions: SelectOption[] = [
   { value: '', label: '- -' },
+  { value: 'averageRating_asc', label: 'за рейтингом (зростання)' },
+  { value: 'averageRating_desc', label: 'за рейтингом (спадання)' },
   { value: 'title_asc', label: 'за назвою (А-Я)' },
   { value: 'title_desc', label: 'за назвою (Я-А)' },
   { value: 'year_asc', label: 'за роком (зростання)' },

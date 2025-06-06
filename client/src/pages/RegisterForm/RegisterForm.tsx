@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { registerUser } from '../../firebase/auth';
 import styles from './register-form.module.css';
 import Input from '../../components/Input/Input';
-
+import { getErrorMessage } from '../../utils/errorUtils.ts';
 import XIcon from '../../components/Icons/XIcon';
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -32,6 +32,7 @@ const RegisterForm = () => {
     isValid: false,
   });
 
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -46,6 +47,8 @@ const RegisterForm = () => {
       value: newValue,
       isValid: newValue.length > 0,
     });
+
+    setError('');
   }
 
   function handleEmailInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -56,6 +59,7 @@ const RegisterForm = () => {
       value: newValue,
       isValid: validateEmail(newValue),
     });
+    setError('');
   }
 
   function handlePasswordInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -64,6 +68,7 @@ const RegisterForm = () => {
       value: e.target.value,
       isValid: e.target.value.length >= 6,
     });
+    setError('');
   }
 
   function handleConfirmPasswordInput(e: React.ChangeEvent<HTMLInputElement>) {
@@ -72,6 +77,7 @@ const RegisterForm = () => {
       value: e.target.value,
       isValid: e.target.value === password.value,
     });
+    setError('');
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -101,13 +107,9 @@ const RegisterForm = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        navigate('/error', {
-          state: {
-            code: response.status,
-            message: errorData.message || 'Щось пішло не так',
-          },
-        });
-        return;
+        throw new Error(
+          errorData.message || 'Помилка при реєстрації користувача.'
+        );
       }
 
       setSuccessMessage(`Користувач ${user.displayName} зареєстрований!`);
@@ -117,13 +119,10 @@ const RegisterForm = () => {
 
       if (error.code === 'auth/email-already-in-use') {
         setEmail((prev) => ({ ...prev, isTaken: true }));
+      } else if (error.code === 'auth/network-request-failed') {
+        setError("Помилка мережі. Перевірте з'єднання з Інтернетом");
       } else {
-        navigate('/error', {
-          state: {
-            code: 500,
-            message: 'Помилка при з’єднанні з сервером. Спробуйте ще раз.',
-          },
-        });
+        setError(getErrorMessage(err));
       }
     } finally {
       setLoading(false);
@@ -224,6 +223,7 @@ const RegisterForm = () => {
         />
         Показати пароль
       </label>
+      {error && <div className={styles.error}>{error}</div>}
       <button
         className={styles['submit-btn']}
         onClick={handleSubmit}

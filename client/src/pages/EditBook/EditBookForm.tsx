@@ -6,6 +6,7 @@ import AuthorAutocompleteInput from '../../components/AuthorAutocompleteInput/Au
 import XIcon from '../../components/Icons/XIcon';
 import Spinner from '../../components/Spinner/Spinner';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { getErrorMessage } from '../../utils/errorUtils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 import { useAuth } from '../../AuthContext';
@@ -90,11 +91,7 @@ const EditBookForm = () => {
         setAuthor(data.author);
         setGenres(data.genres.map((genre) => ({ label: genre, value: genre })));
       } catch (error) {
-        setModalError(
-          error instanceof Error
-            ? error.message
-            : 'Не вдалося отримати дані про книгу.'
-        );
+        setModalError(getErrorMessage(error));
       }
     };
 
@@ -133,11 +130,7 @@ const EditBookForm = () => {
       setTimeout(() => navigate(-1), 2000);
     } catch (error) {
       console.log(error);
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка при оновленні книги.'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

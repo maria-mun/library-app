@@ -1,9 +1,13 @@
+.heading2 {
+  font-size: 1.2rem;
+}
+
 .sort {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1rem;
+
   --border: 1px solid var(--neutral);
   margin: 1rem 0 1rem auto;
 }
@@ -22,7 +26,6 @@
   margin: 1rem 0;
 }
 
-/* commentInput.module.css */
 .textarea {
   width: 100%;
   min-height: 3rem;
@@ -32,9 +35,9 @@
   line-height: 1.5;
   font-size: 1rem;
   padding: 0.5rem;
-  background-color: var(--bg2);
+  background-color: rgb(31, 31, 31);
   color: var(--accent1);
-  border-radius: 1rem;
+  border-radius: var(--border-radius);
   border: 1px solid var(--neutral);
 
   box-sizing: border-box;
@@ -49,7 +52,7 @@
 .button {
   background-color: var(--bg2);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   color: var(--accent1);
   display: flex;
   gap: 0.3rem;

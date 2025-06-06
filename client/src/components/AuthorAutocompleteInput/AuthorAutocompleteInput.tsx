@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { useAuth } from '../../AuthContext';
 import styles from './author-autocomplete-input.module.css';
+import { getErrorMessage } from '../../utils/errorUtils.ts';
 const API_URL = import.meta.env.VITE_API_URL;
 
 interface Author {
@@ -50,15 +51,15 @@ const AuthorAutocompleteInput = ({ value, onChange }: Props) => {
         method: 'GET',
         headers,
       });
-      const { data } = await response.json();
+      const { data, message } = await response.json();
       if (!response.ok)
-        throw new Error(data.message || 'Помилка при отриманні авторів');
+        throw new Error(
+          message || 'Помилка при отриманні авторів. Спробуйте ще раз.'
+        );
 
       setAuthors(data || []);
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : 'Помилка при отриманні авторів'
-      );
+      setError(getErrorMessage(error));
       setAuthors([]);
     } finally {
       setIsLoading(false);

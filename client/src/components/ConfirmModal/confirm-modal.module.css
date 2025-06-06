@@ -16,7 +16,7 @@
   width: clamp(380px, 80%, 600px);
   background: rgb(57, 57, 57);
   padding: 20px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
   z-index: 1000;

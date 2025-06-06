@@ -4,6 +4,7 @@ import { useAuth } from '../../AuthContext';
 import styles from './add-author.module.css';
 import XIcon from '../../components/Icons/XIcon';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { getErrorMessage } from '../../utils/errorUtils';
 const API_URL = import.meta.env.VITE_API_URL;
 
 const AddAuthorForm = () => {
@@ -48,13 +49,9 @@ const AddAuthorForm = () => {
       }
 
       setSuccessMessage('Автора/-ку успішно додано!');
-      setTimeout(() => navigate('/allAuthors'), 2000);
+      setTimeout(() => navigate(-1), 2000);
     } catch (error) {
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка при додаванні автора.'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

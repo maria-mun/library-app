@@ -58,7 +58,7 @@ router.get(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        error: 'Щось пішло не так при отриманні книг. Спробуйте ще раз.',
+        message: 'Щось пішло не так при отриманні книг. Спробуйте ще раз.',
       });
     }
   }
@@ -96,7 +96,7 @@ router.get(
         user = await User.findOne({ firebaseUid });
 
         if (!user) {
-          res.status(404).json({ error: 'Користувач не знайдений' });
+          res.status(404).json({ message: 'Користувач не знайдений' });
           return;
         }
 
@@ -104,7 +104,7 @@ router.get(
           const ids = getUserBookIdsFromList(user, list);
 
           if (!ids) {
-            res.status(400).json({ error: 'Невалідний список' });
+            res.status(400).json({ message: 'Невалідний список' });
             return;
           }
 
@@ -170,7 +170,7 @@ router.get(
     } catch (error) {
       console.error(error);
       res.status(500).json({
-        error: 'Щось пішло не так при отриманні книг. Спробуйте ще раз.',
+        message: 'Щось пішло не так при отриманні книг. Спробуйте ще раз.',
       });
     }
   }
@@ -190,7 +190,7 @@ router.get('/public/:id', async (req: Request, res: Response) => {
     res.status(200).json(book);
   } catch (error) {
     res.status(500).json({
-      error: 'Щось пішло не так при отриманні книги. Спробуйте ще раз.',
+      message: 'Щось пішло не так при отриманні книги. Спробуйте ще раз.',
     });
   }
 });
@@ -247,7 +247,7 @@ router.get(
       });
     } catch (error) {
       res.status(500).json({
-        error: 'Щось пішло не так при отриманні книги. Спробуйте ще раз.',
+        message: 'Щось пішло не так при отриманні книги. Спробуйте ще раз.',
       });
     }
   }

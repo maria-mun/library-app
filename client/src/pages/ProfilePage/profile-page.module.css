@@ -46,7 +46,7 @@
 .button {
   background-color: var(--bg2);
   border: none;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   color: var(--accent1);
   display: flex;
   gap: 0.3rem;
@@ -60,7 +60,7 @@
 
 .input {
   padding: 0.5rem;
-  border-radius: 0.3rem;
+  border-radius: var(--border-radius);
   background-color: var(--bg2);
   border: 1px solid var(--neutral);
   color: var(--accent1);

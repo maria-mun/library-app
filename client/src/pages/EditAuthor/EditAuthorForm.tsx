@@ -5,6 +5,7 @@ import styles from './edit-author-form.module.css';
 import XIcon from '../../components/Icons/XIcon';
 import Spinner from '../../components/Spinner/Spinner';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import { getErrorMessage } from '../../utils/errorUtils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -47,11 +48,7 @@ const EditAuthorForm = () => {
         setDescription(data.description || '');
         setPhoto(data.photo || '');
       } catch (error) {
-        setModalError(
-          error instanceof Error
-            ? error.message
-            : 'Не вдалося отримати дані автора.'
-        );
+        setModalError(getErrorMessage(error));
       }
     };
 
@@ -88,11 +85,7 @@ const EditAuthorForm = () => {
       setSuccessMessage('Автора/-ку успішно оновлено!');
       setTimeout(() => navigate(-1), 2000);
     } catch (error) {
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка при оновленні автора.'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setLoading(false);
     }

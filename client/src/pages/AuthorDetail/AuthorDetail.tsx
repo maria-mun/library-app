@@ -10,6 +10,8 @@ import Spinner from '../../components/Spinner/Spinner';
 import AddBookIcon from '../../components/Icons/AddBookIcon';
 import BinIcon from '../../components/Icons/BinIcon';
 import EditIcon from '../../components/Icons/EditIcon';
+import ErrorComponent from '../../components/Error/ErrorComponent';
+import { getErrorMessage } from '../../utils/errorUtils';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -97,11 +99,7 @@ const AuthorDetail = () => {
       setAuthor(data);
       setIsFavorite(data.isFavorite);
     } catch (error) {
-      setError(
-        error instanceof Error
-          ? error.message
-          : 'Помилка при завантаженні автора.'
-      );
+      setError(getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
@@ -132,11 +130,7 @@ const AuthorDetail = () => {
 
       setIsFavorite(status === 'added');
     } catch (error) {
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка. Не вдалося оновити улюблених авторів'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setLoadingToggle(false);
     }
@@ -160,9 +154,7 @@ const AuthorDetail = () => {
 
       navigate('/allAuthors');
     } catch (error) {
-      setModalError(
-        error instanceof Error ? error.message : 'Не вдалося видалити автора.'
-      );
+      setModalError(getErrorMessage(error));
     }
   };
 
@@ -171,11 +163,7 @@ const AuthorDetail = () => {
   }
 
   if (error) {
-    return (
-      <div className={styles['error-cont']}>
-        <p className={styles.error}>{error}</p>
-      </div>
-    );
+    return <ErrorComponent error={error} tryAgain={fetchAuthor} />;
   }
 
   return (
@@ -193,10 +181,10 @@ const AuthorDetail = () => {
         </div>
 
         <div className={styles.details}>
-          <h2 className={styles.name}>
+          <h1 className={styles.name}>
             {author?.name}{' '}
             {isFavorite && <span className={styles['fave-icon']}>✪</span>}
-          </h2>
+          </h1>
           <p className={styles.country}>{author?.country}</p>
           {user ? (
             <button
@@ -254,7 +242,7 @@ const AuthorDetail = () => {
         </div>
       )}
       <hr />
-      <h3>Книги автора</h3>
+      <h2 className={styles.heading2}>Книги автора</h2>
 
       <div className={styles.sort}>
         <span>Сортування:</span>

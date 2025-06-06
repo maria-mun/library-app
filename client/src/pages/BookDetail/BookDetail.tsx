@@ -1,5 +1,5 @@
 import styles from './book-detail.module.css';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
 import Spinner from '../../components/Spinner/Spinner';
@@ -9,7 +9,12 @@ import StarIcon from '../../components/Icons/StarIcon';
 import EditIcon from '../../components/Icons/EditIcon';
 import BinIcon from '../../components/Icons/BinIcon';
 import Rating from '../../components/Rating/Rating';
+import ArrowIcon from '../../components/Icons/ArrowIcon';
 import ConfirmModal from '../../components/ConfirmModal/ConfirmModal';
+import ErrorComponent from '../../components/Error/ErrorComponent';
+import { getErrorMessage } from '../../utils/errorUtils';
+import BookMarks from '../../components/BookMarks/BookMarks';
+
 const API_URL = import.meta.env.VITE_API_URL;
 const lists = [
   { key: 'readBooks', label: 'Прочитано' },
@@ -43,6 +48,7 @@ const BookDetail = () => {
   const navigate = useNavigate();
 
   const [bookData, setBookData] = useState<Book | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
   const [activeLists, setActiveLists] = useState<string[]>([]);
   const [loadingListKey, setLoadingListKey] = useState<string | null>(null);
 
@@ -54,45 +60,57 @@ const BookDetail = () => {
 
   useEffect(() => {
     if (loadingUser) return;
-    const fetchBook = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const url = `${API_URL}/books/${user ? 'authorized' : 'public'}/${id}`;
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json',
-        };
-
-        if (user) {
-          const token = await getFreshToken();
-          headers.Authorization = `Bearer ${token}`;
-        }
-        const response = await fetch(url, {
-          method: 'GET',
-          headers,
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Помилка при завантаженні книги.');
-        }
-
-        setBookData(data);
-        if (user) setActiveLists(data.userData.lists);
-      } catch (error) {
-        setError(
-          error instanceof Error
-            ? error.message
-            : 'Помилка при завантаженні книги.'
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchBook();
   }, [id, user, loadingUser]);
+
+  const fetchBook = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const url = `${API_URL}/books/${user ? 'authorized' : 'public'}/${id}`;
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
+
+      if (user) {
+        const token = await getFreshToken();
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const response = await fetch(url, {
+        method: 'GET',
+        headers,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Помилка при завантаженні книги.');
+      }
+
+      setBookData(data);
+      if (user) setActiveLists(data.userData.lists);
+    } catch (error) {
+      setError(getErrorMessage(error));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   async function handleDelete() {
     try {
@@ -111,9 +129,7 @@ const BookDetail = () => {
 
       navigate('/allBooks');
     } catch (error) {
-      setModalError(
-        error instanceof Error ? error.message : 'Не вдалося видалити книгу.'
-      );
+      setModalError(getErrorMessage(error));
     }
   }
 
@@ -147,11 +163,7 @@ const BookDetail = () => {
           : activeLists.filter((l) => l !== list)
       );
     } catch (error) {
-      setModalError(
-        error instanceof Error
-          ? error.message
-          : 'Виникла помилка. Не вдалося оновити списки книг.'
-      );
+      setModalError(getErrorMessage(error));
     } finally {
       setLoadingListKey(null);
     }
@@ -162,11 +174,7 @@ const BookDetail = () => {
   }
 
   if (error) {
-    return (
-      <div className={styles['error-cont']}>
-        <p className={styles.error}>{error}</p>
-      </div>
-    );
+    return <ErrorComponent error={error} tryAgain={fetchBook} />;
   }
 
   return (
@@ -180,6 +188,7 @@ const BookDetail = () => {
                 alt={`Обкладинка книги ${bookData.title}`}
               ></img>
             )}
+            <BookMarks activeLists={activeLists} />
           </div>
         </div>
         <div className={styles.details}>
@@ -189,7 +198,6 @@ const BookDetail = () => {
               {bookData.author.name}
             </Link>
           </p>
-
           <div>
             <span className={styles.year}>{bookData.year}</span>
             <span> • </span>
@@ -206,6 +214,55 @@ const BookDetail = () => {
               bookId={bookData._id}
               currentRating={bookData.userData?.rating || null}
             />
+          </div>{' '}
+          <div className={styles['dropdown-cont']} ref={dropdownRef}>
+            <button
+              className={styles['open-dropdown-btn']}
+              onClick={() => setIsOpen(!isOpen)}
+            >
+              У списках:
+              <ArrowIcon isOpen={isOpen} />
+            </button>
+            {isOpen && (
+              <div className={styles['lists-dropdown']}>
+                <ul className={styles['options-list']}>
+                  {lists.map((item) => {
+                    const isActive = activeLists.includes(item.key);
+                    const isLoading = loadingListKey === item.key;
+                    if (user) {
+                      return (
+                        <li
+                          key={item.key}
+                          className={`${styles.option} ${styles[item.key]} ${
+                            isActive ? styles.active : ''
+                          }`}
+                          onClick={() =>
+                            !loadingListKey && handleToggleBookStatus(item.key)
+                          }
+                          style={{
+                            cursor: loadingListKey ? 'not-allowed' : 'pointer',
+                            opacity: loadingListKey && !isLoading ? 0.5 : 1,
+                          }}
+                        >
+                          {item.label}
+                          {isLoading && <Spinner />}
+                        </li>
+                      );
+                    } else {
+                      return (
+                        <Link
+                          to="/register"
+                          state={{ from: location.pathname }}
+                          className={`${styles.option} ${styles.link}`}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    }
+                  })}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -214,44 +271,6 @@ const BookDetail = () => {
           <span key={index}>{genre}</span>
         ))}
       </div>
-
-      <ul className={styles.lists}>
-        У списках:
-        {lists.map((item) => {
-          const isActive = activeLists.includes(item.key);
-          const isLoading = loadingListKey === item.key;
-          if (user) {
-            return (
-              <li
-                key={item.key}
-                className={`${styles.option} ${styles[item.key]} ${
-                  isActive ? styles.active : ''
-                }`}
-                onClick={() =>
-                  !loadingListKey && handleToggleBookStatus(item.key)
-                }
-                style={{
-                  cursor: loadingListKey ? 'not-allowed' : 'pointer',
-                  opacity: loadingListKey && !isLoading ? 0.5 : 1,
-                }}
-              >
-                {item.label}
-                {isLoading && <Spinner />}
-              </li>
-            );
-          } else {
-            return (
-              <Link
-                to="/register"
-                state={{ from: location.pathname }}
-                className={`${styles.option} ${styles.link}`}
-              >
-                {item.label}
-              </Link>
-            );
-          }
-        })}
-      </ul>
 
       {user && (
         <div className={styles.buttons}>
