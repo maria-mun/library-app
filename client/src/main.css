@@ -11,10 +11,10 @@
 }
 
 :root {
-  --bg1: rgb(255, 255, 255);
-  --bg2: rgb(247, 247, 247);
+  --bg1: rgb(245, 245, 245);
+  --bg2: rgb(232, 232, 232);
   --accent1: rgb(13, 13, 13);
-  --neutral: rgb(103, 103, 103);
+  --neutral: rgb(121, 121, 121);
 }
 
 :root {
@@ -50,7 +50,7 @@ main {
 hr {
   border: none;
   border-bottom: 1px solid var(--neutral);
-  margin: 1rem 0;
+  margin: 0.5rem 0;
 }
 
 @media (min-width: 768px) {

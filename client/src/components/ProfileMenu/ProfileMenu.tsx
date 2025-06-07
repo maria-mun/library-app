@@ -65,25 +65,35 @@ export default function ProfileMenu({ user, logoutUser }: ProfileProps) {
             Профіль
           </NavLink>
           <NavLink
-            to="/myLists"
+            to="/myAuthors"
             className={styles['menu-option']}
             onClick={() => setIsOpen(false)}
           >
-            Мої списки
+            Улюблені автори
           </NavLink>
+          <NavLink
+            to="/myBooks"
+            className={styles['menu-option']}
+            onClick={() => setIsOpen(false)}
+          >
+            Мої списки книг
+          </NavLink>
+          <hr />
           <NavLink
             to="/addBookForm"
             className={styles['menu-option']}
             onClick={() => setIsOpen(false)}
           >
-            Додати книгу до бази даних
+            <span className={styles['add-icon']}>+</span>
+            <p>Додати книгу до бази даних</p>
           </NavLink>
           <NavLink
             to="/addAuthorForm"
             className={styles['menu-option']}
             onClick={() => setIsOpen(false)}
           >
-            Додати автора до бази даних
+            <span className={styles['add-icon']}>+</span>
+            <p>Додати автора до бази даних</p>
           </NavLink>{' '}
           <button
             onClick={handleLogout}

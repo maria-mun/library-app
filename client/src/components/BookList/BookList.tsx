@@ -198,8 +198,9 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
                   </p>
                 )
               )}
-              {books.map((book) => (
+              {books.map((book, index) => (
                 <BookCard
+                  countNumber={index + 1}
                   user={user}
                   key={book._id}
                   book={book}
@@ -218,12 +219,16 @@ function BookList({ authorId, sort, order, search, list }: BooksProps) {
           )
         ) : (
           <>
-            {(search && totalCount > 0) ||
-              (list && (
-                <p className={styles.totalCount}>Знайдено: {totalCount}</p>
-              ))}
-            {books.map((book) => (
+            {search && totalCount > 0 ? (
+              <p className={styles.totalCount}>Знайдено: {totalCount}</p>
+            ) : (
+              list && (
+                <p className={styles.totalCount}>Книг у списку: {totalCount}</p>
+              )
+            )}
+            {books.map((book, index) => (
               <BookCard
+                countNumber={index + 1}
                 user={user}
                 key={book._id}
                 book={book}

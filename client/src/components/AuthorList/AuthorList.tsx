@@ -30,10 +30,11 @@ type Book = {
 };
 
 type AuthorProps = {
+  favoriteList?: boolean;
   search?: string;
 };
 
-function AuthorList({ search }: AuthorProps) {
+function AuthorList({ favoriteList, search }: AuthorProps) {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [modalAuthorId, setModalAuthorId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,7 +65,9 @@ function AuthorList({ search }: AuthorProps) {
         user ? 'authorized' : 'public'
       }?offset=${pageToLoad * limit}&limit=${limit}${
         search ? `&search=${encodeURIComponent(search)}` : ''
-      }`;
+      }${favoriteList ? '&favoriteList=true' : ''}`;
+
+      console.log('Fetching authors from:', url);
 
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
@@ -165,9 +168,10 @@ function AuthorList({ search }: AuthorProps) {
               {search && totalCount > 0 && (
                 <p className={styles.totalCount}>Знайдено: {totalCount}</p>
               )}
-              {authors.map((author) => {
+              {authors.map((author, index) => {
                 return (
                   <AuthorCard
+                    countNumber={index + 1}
                     author={author}
                     key={author._id}
                     onDelete={() => {
@@ -193,9 +197,10 @@ function AuthorList({ search }: AuthorProps) {
             {search && totalCount > 0 && (
               <p className={styles.totalCount}>Знайдено: {totalCount}</p>
             )}
-            {authors.map((author) => {
+            {authors.map((author, index) => {
               return (
                 <AuthorCard
+                  countNumber={index + 1}
                   author={author}
                   key={author._id}
                   onDelete={() => {

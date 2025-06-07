@@ -38,6 +38,7 @@ type Book = {
 };
 
 type BookCardProps = {
+  countNumber?: number;
   user: User | null;
   book: Book;
   onDelete: () => void;
@@ -53,6 +54,7 @@ const lists = [
 ];
 
 const BookCard = ({
+  countNumber,
   user,
   book,
   onDelete,
@@ -142,6 +144,7 @@ const BookCard = ({
       </div>
       <div className={styles.details}>
         <h2 className={styles.title}>
+          {countNumber && `${countNumber}. `}
           <Link to={`/book/${book._id}`}>{book.title}</Link>
         </h2>
         <p className={styles.author}>
@@ -149,7 +152,7 @@ const BookCard = ({
         </p>
         <div>
           <span className={styles.year}>{book.year}</span>
-          <span> • </span>
+          {book.year && book.author.country && <span> • </span>}
           <span className={styles.country}>{book.author.country}</span>
         </div>
         <div className={styles.rating}>

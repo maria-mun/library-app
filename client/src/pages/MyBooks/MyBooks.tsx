@@ -1,4 +1,4 @@
-import styles from './my-lists.module.css';
+import styles from './my-books.module.css';
 import { useState, useEffect } from 'react';
 import BookList from '../../components/BookList/BookList';
 import SearchIcon from '../../components/Icons/SearchIcon';
@@ -58,7 +58,7 @@ function MyLists() {
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>Мої списки</h2>
+      <h2 className={styles.title}>Мої списки книг</h2>
 
       <div className={styles.lists}>
         {lists.map(({ key, label }) => (

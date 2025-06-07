@@ -18,7 +18,8 @@ import AuthorDetail from './pages/AuthorDetail/AuthorDetail';
 import './main.css';
 import RegisterForm from './pages/RegisterForm/RegisterForm';
 import LoginForm from './pages/LoginForm/LoginForm';
-import MyLists from './pages/MyLists/MyLists';
+import MyBooks from './pages/MyBooks/MyBooks';
+import MyAuthors from './pages/MyAuthors/MyAuthors';
 import EditBookForm from './pages/EditBook/EditBookForm';
 import EditAuthorForm from './pages/EditAuthor/EditAuthorForm';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
@@ -48,9 +49,10 @@ const router = createBrowserRouter([
         element: <AuthorDetail />,
       },
       {
-        path: '/myLists',
-        element: <MyLists />,
+        path: '/myBooks',
+        element: <MyBooks />,
       },
+      { path: '/myAuthors', element: <MyAuthors /> },
       {
         path: '/myProfile',
         element: <ProfilePage />,

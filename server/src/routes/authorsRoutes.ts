@@ -6,6 +6,7 @@ import { Book } from '../models/Book';
 import { Request, Response } from 'express';
 import { verifyToken } from '../middleware/authMiddleware';
 import { query, body, validationResult } from 'express-validator';
+import { fstat } from 'fs';
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.get(
       .trim()
       .isLength({ max: 100 })
       .withMessage('Максимальна довжина пошукового запиту — 100 символів.'),
+    query('favoriteList').optional().isBoolean().toBoolean(),
   ],
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
@@ -28,12 +30,30 @@ router.get(
     }
 
     const firebaseUid = req.user?.uid;
-    const searchQuery = req.query.search;
+    const { searchQuery, favoriteList } = req.query;
     const offset = parseInt(req.query.offset as string) || 0;
     const limit = parseInt(req.query.limit as string) || 10;
 
     try {
       const filter: any = {};
+
+      //отримуємо ід улюблених авторів користувача
+      let favAuthorIds: string[] = [];
+
+      if (firebaseUid) {
+        const user = await User.findOne({ firebaseUid });
+
+        if (user) {
+          favAuthorIds = user.favoriteAuthors.map((item) =>
+            item.authorId.toString()
+          );
+        }
+      }
+
+      // Якщо запит на улюблені автори, додаємо фільтр
+      if (favoriteList) {
+        filter._id = { $in: favAuthorIds };
+      }
 
       if (searchQuery) {
         filter.name = { $regex: searchQuery, $options: 'i' };
@@ -56,24 +76,12 @@ router.get(
         bookCounts.map((item) => [item._id.toString(), item.count])
       );
 
-      let favAuthorIds: string[] = [];
-
-      if (firebaseUid) {
-        const user = await User.findOne({ firebaseUid });
-
-        if (user) {
-          favAuthorIds = user.favoriteAuthors.map((item) =>
-            item.authorId.toString()
-          );
-        }
-      }
-
       const result = authors.map((author) => {
         const authorObj = author.toObject();
         const idStr = author._id.toString();
         return {
           ...authorObj,
-          isFavorite: favAuthorIds.includes(idStr),
+          isFavorite: favoriteList ? true : favAuthorIds.includes(idStr),
           hasBooks: bookCountMap.has(idStr),
         };
       });

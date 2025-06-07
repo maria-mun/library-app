@@ -19,6 +19,7 @@ type Author = {
 };
 
 type Book = {
+  countNumber?: number;
   _id: string;
   title: string;
   author: Author;
@@ -29,11 +30,12 @@ type Book = {
 };
 
 type AuthorCardProps = {
+  countNumber?: number;
   author: Author;
   onDelete: () => void;
 };
 
-const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
+const AuthorCard = ({ countNumber, author, onDelete }: AuthorCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(author.isFavorite);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -99,6 +101,7 @@ const AuthorCard = ({ author, onDelete }: AuthorCardProps) => {
       </Link>
       <div className={styles.details}>
         <h2 className={styles.name}>
+          {countNumber && `${countNumber}. `}
           <Link to={`/author/${author._id}`}>{author.name}</Link>{' '}
           {isFavorite && <span className={styles['fave-icon']}>✪</span>}
         </h2>

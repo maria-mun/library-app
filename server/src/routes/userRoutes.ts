@@ -1,6 +1,7 @@
 import { User } from '../models/User';
 import { Book } from '../models/Book';
 import express, { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { verifyToken } from '../middleware/authMiddleware';
 
 const router = express.Router();
@@ -161,7 +162,9 @@ router.post('/rating', verifyToken, async (req: Request, res: Response) => {
     await user.save();
 
     //оновлення середньої оцінки книги
-    const users = await User.find({ 'ratedBooks.bookId': bookId });
+    const users = await User.find({
+      'ratedBooks.bookId': new mongoose.Types.ObjectId(bookId),
+    });
     const ratings = users
       .map((u) => u.ratedBooks.find((rb) => rb.bookId.toString() === bookId))
       .filter(Boolean)

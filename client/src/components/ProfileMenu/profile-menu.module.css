@@ -18,9 +18,13 @@
   display: flex;
   flex-direction: column;
 
-  width: 12rem;
+  width: 15rem;
   color: var(--accent1);
   box-shadow: black 0px 0px 10px 0px;
+}
+
+.add-icon {
+  font-size: 1.5rem;
 }
 
 .menu-option {
@@ -29,6 +33,9 @@
   padding: 0.5rem 0.8rem;
   border-radius: var(--border-radius);
   font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .menu-option:hover {

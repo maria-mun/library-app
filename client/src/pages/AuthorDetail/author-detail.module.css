@@ -105,7 +105,7 @@
 
 .fave-btn {
   background: var(--bg2);
-  border: 1px solid var(--bg1);
+  border: 1px solid var(--neutral);
   color: var(--neutral);
   font-size: 0.9rem;
   border-radius: var(--border-radius);
@@ -160,4 +160,5 @@
 
 .heading2 {
   font-size: 1.2rem;
+  margin-top: 2rem;
 }
