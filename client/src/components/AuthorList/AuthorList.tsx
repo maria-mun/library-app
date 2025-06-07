@@ -67,8 +67,6 @@ function AuthorList({ favoriteList, search }: AuthorProps) {
         search ? `&search=${encodeURIComponent(search)}` : ''
       }${favoriteList ? '&favoriteList=true' : ''}`;
 
-      console.log('Fetching authors from:', url);
-
       const headers: HeadersInit = {
         'Content-Type': 'application/json',
       };

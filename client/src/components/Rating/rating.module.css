@@ -26,6 +26,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
+
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -35,7 +36,7 @@
 
 .modal {
   background: rgb(57, 57, 57);
-  padding: 20px;
+  padding: 1rem;
   border-radius: var(--border-radius);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
   text-align: center;
