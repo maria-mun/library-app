@@ -1,9 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-import serviceAccount from '../firebaseAdmin.json';
+/* import serviceAccount from '../firebaseAdmin.json'; */
 import { User } from '../models/User';
 import { DecodedIdToken } from 'firebase-admin/auth';
+
+import { readFileSync } from 'fs';
+
+let serviceAccount;
+
+if (process.env.NODE_ENV === 'production') {
+  const secretPath = '/etc/secrets/firebaseAdmin';
+  const fileContents = readFileSync(secretPath, 'utf-8');
+  serviceAccount = JSON.parse(fileContents);
+} else {
+  serviceAccount = require('../firebaseAdmin.json');
+}
 
 declare module 'express' {
   interface Request {
@@ -13,7 +25,7 @@ declare module 'express' {
 
 const app = getApps().length
   ? getApps()[0]
-  : initializeApp({ credential: cert(serviceAccount as any) });
+  : initializeApp({ credential: cert(serviceAccount) });
 
 const auth = getAuth(app);
 
