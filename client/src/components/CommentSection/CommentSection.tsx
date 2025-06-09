@@ -119,12 +119,14 @@ export default function CommentSection({ bookId }: { bookId: string }) {
                 fetchComments(0, true);
               }}
             />
-            <LoadMoreButton
-              onClick={loadMore}
-              hasMore={hasMore}
-              loading={loading}
-              error={error}
-            />
+            {comments.length > 0 && (
+              <LoadMoreButton
+                onClick={loadMore}
+                hasMore={hasMore}
+                loading={loading}
+                error={error}
+              />
+            )}
           </>
         )
       ) : (
@@ -141,12 +143,14 @@ export default function CommentSection({ bookId }: { bookId: string }) {
               tryAgain={() => fetchComments(page, false)}
             />
           ) : (
-            <LoadMoreButton
-              onClick={loadMore}
-              hasMore={hasMore}
-              loading={loading}
-              error={error}
-            />
+            comments.length > 0 && (
+              <LoadMoreButton
+                onClick={loadMore}
+                hasMore={hasMore}
+                loading={loading}
+                error={error}
+              />
+            )
           )}
         </>
       )}
