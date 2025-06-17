@@ -81,3 +81,9 @@ h1 .link {
   border: 1px solid var(--accent2);
   color: var(--accent2);
 }
+
+@media (max-width: 550px) {
+  .register-btn {
+    display: none;
+  }
+}
