@@ -1,7 +1,7 @@
 .container {
   position: relative;
   width: 100%;
-  min-width: 10rem;
+  min-width: 9rem;
   min-height: 2.5rem;
   border-radius: var(--border-radius);
   background-color: var(--bg2);

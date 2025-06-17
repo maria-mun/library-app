@@ -24,7 +24,7 @@
 }
 
 .sort {
-  min-width: 20rem;
+  min-width: 18rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;

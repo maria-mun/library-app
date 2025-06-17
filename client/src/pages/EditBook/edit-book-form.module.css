@@ -63,7 +63,7 @@
 }
 
 .submit-btn {
-  background: rgb(187, 67, 44);
+  background: var(--accent2);
   margin: 1rem 0;
   border: none;
   border-radius: var(--border-radius);
