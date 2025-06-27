@@ -19,18 +19,18 @@ Auth: Firebase Authentication
 Deployment: Render
 
 💾 Local Setup
-git clone git@github.com:maria-mun/library-app.git
-cd library-app
+- git clone git@github.com:maria-mun/library-app.git
+- cd library-app
 
 # install frontend
-cd client
-npm install
-npm run dev
+- cd client
+- npm install
+- npm run dev
 
 # install backend
-cd ../server
-npm install
-npm run dev
+- cd ../server
+- npm install
+- npm run dev
 
 ⚠️ Environment variables (e.g., Firebase credentials, MongoDB URI) are required to run the app and are not included in the repository.
 
