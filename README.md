@@ -13,10 +13,10 @@ Full-stack single-page application for managing and exploring books and authors.
 - Error handling — user-friendly error messages and fallback pages
 
 🧪 Tech Stack
-Frontend: React + TypeScript, CSS Modules
-Backend: Node.js, Express, MongoDB
-Auth: Firebase Authentication
-Deployment: Render
+- Frontend: React + TypeScript, CSS Modules
+- Backend: Node.js, Express, MongoDB
+- Auth: Firebase Authentication
+- Deployment: Render
 
 💾 Local Setup
 - git clone git@github.com:maria-mun/library-app.git
