@@ -30,7 +30,7 @@ router.get(
     }
 
     const firebaseUid = req.user?.uid;
-    const { searchQuery, favoriteList } = req.query;
+    const { search: searchQuery, favoriteList } = req.query;
     const offset = parseInt(req.query.offset as string) || 0;
     const limit = parseInt(req.query.limit as string) || 10;
 
